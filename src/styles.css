@@ -3268,3 +3268,54 @@ body.reading-mushaf {
   .selection-carousel .selection-card p { font-size: 15px; }
   .selection-carousel .selection-controls { gap: 8px; }
 }
+
+@media (max-width: 700px) {
+  .all-reciters {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .all-reciters .reciter-list-card {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) 28px;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 4px;
+    width: 100%;
+    min-height: 88px;
+    padding: 14px;
+    border-radius: 18px;
+    text-align: right;
+  }
+  .all-reciters .initial-medallion {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 52px;
+    height: 58px;
+    margin: 0;
+    border-radius: 26px 26px 12px 12px;
+  }
+  .all-reciters .reciter-list-card h3 {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .all-reciters .reciter-list-card small {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    margin: 0;
+    line-height: 1.5;
+  }
+  .all-reciters .reciter-list-card > .text-link {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    justify-content: center;
+    font-size: 0;
+  }
+  .all-reciters .reciter-list-card > .text-link svg { width: 20px; height: 20px; }
+}
