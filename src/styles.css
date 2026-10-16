@@ -3080,3 +3080,19 @@ body.reading-mushaf {
   .filter-bar { min-width: 0; }
   .filter-bar .tabs { max-width: 100%; flex-wrap: wrap; }
 }
+
+.mushaf-page-frame {
+  touch-action: pinch-zoom;
+  overscroll-behavior-x: contain;
+}
+.mushaf-page-indicator { justify-content: space-between; }
+.mushaf-page-indicator > button { min-width: 44px; min-height: 44px; }
+
+.paged-reader.mushaf-focus-mode .mushaf-header {
+  display: none;
+}
+.mushaf-focus-mode .mushaf-page-text {
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}

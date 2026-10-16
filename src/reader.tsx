@@ -11,6 +11,8 @@ import {
   Copy,
   Check,
   Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { type Surah } from "./data";
 import { usePrefs } from "./store";
@@ -40,7 +42,7 @@ export default function Reader({
   const basmala = surahs[0].ayahs[0].text.replace(/^\uFEFF/, "");
   const [selected, setSelected] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [navigationVisible, setNavigationVisible] = useState(false);
+  const [navigationVisible, setNavigationVisible] = useState(true);
   const frame = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
@@ -123,7 +125,6 @@ export default function Reader({
     navigate(`/quran/${group.surah.number}?page=${next}`);
   };
   useEffect(() => {
-    setNavigationVisible(false);
     setSelected(null);
     setCopied(false);
   }, [page, location.hash]);
@@ -161,7 +162,7 @@ export default function Reader({
       if (!active || !frame.current || !content.current) return;
       const el = content.current;
       let low = 8,
-        high = Math.min(frame.current.clientWidth / 12.5, prefs.fontSize * 1.4);
+        high = Math.min(frame.current.clientWidth / 8, prefs.fontSize * 2);
       // Fit the verified page to the available viewport; never clip its final ayahs.
       for (let i = 0; i < 12; i++) {
         const mid = (low + high) / 2;
@@ -192,7 +193,7 @@ export default function Reader({
       observer.disconnect();
       document.fonts.removeEventListener("loadingdone", fit);
     };
-  }, [page, prefs.fontSize]);
+  }, [page, prefs.fontSize, navigationVisible]);
   useEffect(() => {
     document.body.classList.toggle("mushaf-navigation-visible", navigationVisible);
     return () => document.body.classList.remove("mushaf-navigation-visible");
@@ -212,7 +213,7 @@ export default function Reader({
     </button>
   );
   return (
-    <div className={`reader paged-reader ${page <= 2 ? "opening-page" : ""}`}>
+    <div className={`reader paged-reader ${page <= 2 ? "opening-page" : ""} ${navigationVisible ? "" : "mushaf-focus-mode"}`}>
       <header className="reader-toolbar mushaf-header">
         <div className="mushaf-header-right">
           <Link
@@ -281,15 +282,17 @@ export default function Reader({
           const dx = e.clientX - g.x,
             dy = e.clientY - g.y;
           if (!g.dragging) {
-            if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
+            if (Math.abs(dy) > 20 && Math.abs(dy) > Math.abs(dx) * 1.5) {
               gesture.current = null;
               return;
             }
             if (Math.abs(dx) < 7) return;
             g.dragging = true;
             setDragging(true);
-            e.currentTarget.setPointerCapture(e.pointerId);
+            if (!e.currentTarget.hasPointerCapture(e.pointerId))
+              e.currentTarget.setPointerCapture(e.pointerId);
           }
+          if (e.cancelable) e.preventDefault();
           g.dx = dx;
           const blocked = (page === 604 && dx > 0) || (page === 1 && dx < 0);
           sheet.current.style.transform = `translateX(${blocked ? dx * 0.18 : dx}px)`;
@@ -308,7 +311,7 @@ export default function Reader({
           const velocity =
             Math.abs(g.dx) / Math.max(1, performance.now() - g.time);
           const commit =
-            (Math.abs(g.dx) > width * 0.22 ||
+            (Math.abs(g.dx) > Math.min(65, width * 0.18) ||
               (Math.abs(g.dx) > 45 && velocity > 0.45)) &&
             next >= 1 &&
             next <= 604;
@@ -323,8 +326,11 @@ export default function Reader({
         onPointerCancel={() => {
           if (gesture.current) cancelDrag();
         }}
-        onLostPointerCapture={() => {
-          if (gesture.current) cancelDrag();
+        onLostPointerCapture={(e) => {
+          // Touch devices initially capture the child under the finger. Its
+          // lost-capture event bubbles when capture moves to this frame.
+          if (e.target === e.currentTarget && gesture.current &&
+              !e.currentTarget.hasPointerCapture(e.pointerId)) cancelDrag();
         }}
       >
         <div
@@ -435,9 +441,11 @@ export default function Reader({
         )}
       </div>
       <footer className="mushaf-pagination mushaf-page-indicator">
+        <button aria-label="الصفحة السابقة" disabled={page === 1} onClick={() => go(page - 1)}><ChevronRight size={20} /></button>
         <span role="status" aria-live="polite">
           {page.toLocaleString("ar-EG")}
         </span>
+        <button aria-label="الصفحة التالية" disabled={page === 604} onClick={() => go(page + 1)}><ChevronLeft size={20} /></button>
       </footer>
     </div>
   );
