@@ -1,5 +1,6 @@
+import PageSkeleton from "./page-skeleton";
 import { Link } from "react-router-dom";
-import { ChevronLeft, LoaderCircle } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 export function Logo() {
   return (
@@ -57,6 +58,7 @@ export function Status({
   error?: boolean;
   retry?: () => void;
 }) {
+  if (!error) return <PageSkeleton />;
   return (
     <div className="status" role="status">
       {error ? (
@@ -66,7 +68,7 @@ export function Status({
         </>
       ) : (
         <>
-          <LoaderCircle className="spin" /> جارٍ تحميل المحتوى…
+          <PageSkeleton />
         </>
       )}
     </div>

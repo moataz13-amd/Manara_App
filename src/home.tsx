@@ -1,3 +1,4 @@
+import PageSkeleton from "./page-skeleton";
 import SurahName from "./surah-name";
 import { useRef, type ReactNode } from "react";
 import { Link } from "react-router-dom";
@@ -143,6 +144,7 @@ export default function Home() {
     (id) => reciters.data?.find((r) => r.id === id) || [],
   );
   const dhikrCategories = [...new Set(adhkar.data?.map((row) => row[0]) || ["أذكار المساء", "أذكار الصباح", "أذكار النوم"])];
+  if (quran.isPending || reciters.isPending || adhkar.isPending) return <PageSkeleton />;
   return (
     <>
       <div className="home-intro">

@@ -3170,3 +3170,55 @@ body.reading-mushaf {
 @media (prefers-reduced-motion: reduce) {
   .surah-name-ready { transition: none; }
 }
+
+.page-skeleton { width: 100%; min-width: 0; }
+.skeleton-block {
+  background: var(--mint-soft);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, #ffffff70 50%, transparent 80%);
+  transform: translateX(100%);
+  animation: skeleton-sweep 1.6s ease-in-out infinite;
+}
+@keyframes skeleton-sweep { to { transform: translateX(-100%); } }
+.skeleton-block.eyebrow { width: 130px; height: 10px; margin-bottom: 12px; }
+.skeleton-block.title { width: min(65%, 300px); height: 32px; margin-bottom: 12px; }
+.skeleton-block.subtitle { width: min(85%, 380px); height: 14px; margin-bottom: 28px; }
+.skeleton-home-top { margin-bottom: 28px; }
+.skeleton-block.prayer { height: 250px; border-radius: 28px; }
+.skeleton-block.continue { height: 150px; border-radius: 24px; }
+.skeleton-block.section-title { width: 110px; height: 20px; margin-block: 24px 14px; }
+.skeleton-grid { display: grid; gap: 16px; margin-bottom: 24px; }
+.skeleton-grid.portraits { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.skeleton-block.portrait { height: 230px; border-radius: 70px 70px 20px 20px; }
+.skeleton-grid.rows { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.skeleton-row { display: flex; align-items: center; gap: 16px; padding: 17px; min-height: 90px; border: 1px solid var(--border); border-radius: 16px; }
+.skeleton-row > div:last-child { flex: 1; }
+.skeleton-block.medallion { width: 37px; height: 37px; flex-shrink: 0; }
+.skeleton-block.row-title { width: 75%; height: 23px; margin-bottom: 9px; }
+.skeleton-block.row-detail { width: 50%; height: 10px; }
+.skeleton-block.banner { height: 140px; margin-bottom: 24px; border-radius: 24px; }
+.skeleton-block.search { height: 46px; margin-bottom: 20px; border-radius: 24px; }
+.skeleton-block.card { height: 200px; border-radius: 24px; }
+.skeleton-reader { max-width: 780px; margin: auto; }
+.skeleton-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+.skeleton-block.pill { width: 95px; height: 34px; border-radius: 24px; }
+.skeleton-block.logo { width: 40px; height: 52px; }
+.skeleton-block.surah-heading { height: 50px; margin-bottom: 30px; }
+.skeleton-verses { display: grid; gap: 22px; }
+.skeleton-block.verse { height: 18px; }
+.skeleton-block.page-number { width: 45px; height: 26px; margin: 28px auto 0; border-radius: 20px; }
+@media (max-width: 900px) { .skeleton-grid.rows { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) {
+  .skeleton-grid.rows { grid-template-columns: 1fr; }
+  .skeleton-grid.portraits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .skeleton-block.portrait { height: 190px; }
+  .skeleton-home-top { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .skeleton-block::after { animation: none; } }
