@@ -3359,3 +3359,29 @@ body.reading-mushaf {
 .hadith-grades { margin-block: 14px; font-size: 14px; color: var(--muted); }
 .hadith-grades summary { cursor: pointer; }
 .hadith-grades li { margin-block: 6px; }
+
+.showing-splash { overflow: hidden; }
+.smooth-splash {
+  opacity: 1;
+  transition: opacity 420ms ease;
+}
+.smooth-splash.is-closing { opacity: 0; }
+.splash-artwork-stage { position: relative; width: 100%; height: calc(100dvh - 120px); }
+.splash-artwork-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  transition: opacity 550ms ease, transform 700ms cubic-bezier(.2,.65,.3,1);
+  pointer-events: none;
+}
+.splash-artwork-layer.is-active { opacity: 1; transform: translateY(0) scale(1); }
+.splash-artwork-layer img { width: min(100%, 402px); height: auto; max-height: 100%; object-fit: contain; }
+.smooth-splash .splash-skip { opacity: 0; transition: opacity 300ms ease; }
+.smooth-splash.is-ready .splash-skip { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .smooth-splash, .splash-artwork-layer, .smooth-splash .splash-skip { transition: none; transform: none; }
+}

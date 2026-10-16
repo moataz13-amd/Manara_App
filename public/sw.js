@@ -1,4 +1,4 @@
-const CACHE = "manara-v3-fonts";
+const CACHE = "manara-v4-offline";
 self.addEventListener("install", (event) =>
   event.waitUntil(
     caches
@@ -7,6 +7,15 @@ self.addEventListener("install", (event) =>
         cache.addAll([
           "/",
           "/data/quran.json",
+          "/data/hafs-display.json",
+          "/manifest.webmanifest",
+          "/images/splash-screen-1.svg",
+          "/images/splash-screen-2.svg",
+          "/images/HomeIcon.svg",
+          "/images/QuranIcon.svg",
+          "/images/AwqatIcon.svg",
+          "/images/SebhaIcon.svg",
+          "/images/MoreIcon.svg",
           "/fonts/arbfonts_Qurraan_sora.woff2",
           "/fonts/UthmanicHafs_v2-1.woff2",
           "/fonts/Elgharib%20Ajzaa%20Alquran%20Madina.woff2",

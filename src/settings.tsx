@@ -1,3 +1,4 @@
+import { validCoordinates, validTimeZone } from "./location";
 import { useState } from "react";
 import Account from "./auth";
 import { NotificationSettings } from "./notifications";
@@ -65,6 +66,10 @@ export function LocationSettings() {
   );
   const [name, setName] = useState("");
   const locate = () => {
+    if (!window.isSecureContext) {
+      setStatus("تحديد الموقع التلقائي يحتاج رابط HTTPS. اختر مدينتك من القائمة، وسيتم حفظها على جهازك.");
+      return;
+    }
     if (!navigator.geolocation) {
       setStatus("المتصفح لا يدعم تحديد الموقع. اختر المدينة يدويًا.");
       return;
@@ -72,14 +77,20 @@ export function LocationSettings() {
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        const { latitude, longitude } = position.coords;
+        setLat(String(latitude));
+        setLon(String(longitude));
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 10000);
         try {
-          const { latitude, longitude } = position.coords;
+          if (!validCoordinates(latitude, longitude)) throw new Error("Invalid coordinates");
           const r = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&timezone=auto&forecast_days=1`,
-            { signal: AbortSignal.timeout(10000) },
+            { signal: controller.signal },
           );
           if (!r.ok) throw new Error();
           const result = await r.json();
+          if (!validTimeZone(result.timezone)) throw new Error("Invalid timezone");
           const placeName = name.trim() || `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
           prefs.set({
             place: {
@@ -95,16 +106,19 @@ export function LocationSettings() {
             "تعذّر تحديد المنطقة الزمنية. أدخل الإحداثيات والمنطقة الزمنية يدويًا.",
           );
         } finally {
+          clearTimeout(timeout);
           setBusy(false);
         }
       },
-      () => {
-        setStatus(
-          "لم نتمكن من الوصول للموقع. يمكنك اختيار المدينة أو إدخال الإحداثيات.",
-        );
+      (error) => {
+        setStatus(error.code === 1
+          ? "إذن الموقع مرفوض. اسمح به من إعدادات المتصفح أو اختر مدينتك يدويًا."
+          : error.code === 3
+            ? "انتهت مهلة تحديد الموقع. حاول مرة أخرى أو اختر مدينتك يدويًا."
+            : "الموقع غير متاح الآن. اختر مدينتك يدويًا وسيتم حفظها.");
         setBusy(false);
       },
-      { timeout: 12000 },
+      { timeout: 15000, maximumAge: 300000, enableHighAccuracy: false },
     );
   };
   return (
@@ -148,13 +162,17 @@ export function LocationSettings() {
           onSubmit={(e) => {
             e.preventDefault();
             try {
-              new Intl.DateTimeFormat("ar", { timeZone: zone }).format();
+              if (!lat.trim() || !lon.trim() || !validCoordinates(Number(lat), Number(lon))) {
+                setStatus("أدخل خط عرض من −٩٠ إلى ٩٠ وخط طول من −١٨٠ إلى ١٨٠.");
+                return;
+              }
+              if (!validTimeZone(zone.trim())) throw new Error("Invalid timezone");
               prefs.set({
                 place: {
                   name: name || `${lat}, ${lon}`,
                   lat: Number(lat),
                   lon: Number(lon),
-                  timezone: zone,
+                  timezone: zone.trim(),
                 },
               });
               setStatus("تم حفظ الموقع");

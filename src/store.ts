@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { validPlace } from "./location";
+import { persist, createJSONStorage } from "zustand/middleware";
 export interface Place {
   name: string;
   lat: number;
@@ -73,6 +74,19 @@ export const usePrefs = create<Preferences>()(
           counts: { ...s.counts, [id]: Math.min((s.counts[id] || 0) + 1, max) },
         })),
     }),
-    { name: "manara-preferences" },
+    {
+      name: "manara-preferences",
+      storage: createJSONStorage(() => ({
+        getItem: (key) => {
+          try { const value = localStorage.getItem(key); if (value) JSON.parse(value); return value; } catch { return null; }
+        },
+        setItem: (key, value) => { try { localStorage.setItem(key, value); } catch { /* Keep the app usable when browser storage is unavailable. */ } },
+        removeItem: (key) => { try { localStorage.removeItem(key); } catch {} },
+      })),
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<Preferences> | null;
+        return { ...current, ...saved, place: validPlace(saved?.place) ? saved!.place! : null };
+      },
+    },
   ),
 );
