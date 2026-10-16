@@ -11,8 +11,6 @@ import {
   Copy,
   Check,
   Search,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { type Surah } from "./data";
 import { usePrefs } from "./store";
@@ -42,7 +40,7 @@ export default function Reader({
   const basmala = surahs[0].ayahs[0].text.replace(/^\uFEFF/, "");
   const [selected, setSelected] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [navigationVisible, setNavigationVisible] = useState(true);
+  const [navigationVisible, setNavigationVisible] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
@@ -441,11 +439,9 @@ export default function Reader({
         )}
       </div>
       <footer className="mushaf-pagination mushaf-page-indicator">
-        <button aria-label="الصفحة السابقة" disabled={page === 1} onClick={() => go(page - 1)}><ChevronRight size={20} /></button>
         <span role="status" aria-live="polite">
           {page.toLocaleString("ar-EG")}
         </span>
-        <button aria-label="الصفحة التالية" disabled={page === 604} onClick={() => go(page + 1)}><ChevronLeft size={20} /></button>
       </footer>
     </div>
   );

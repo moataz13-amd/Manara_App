@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 export default function Splash() {
   const [visible, setVisible] = useState(() => {
     try {
-      return !sessionStorage.getItem("manara-welcome");
+      return !localStorage.getItem("manara-welcome");
     } catch {
       return false;
     }
@@ -14,7 +14,7 @@ export default function Splash() {
     const second = setTimeout(() => {
       setVisible(false);
       try {
-        sessionStorage.setItem("manara-welcome", "1");
+        localStorage.setItem("manara-welcome", "1");
       } catch {}
     }, 1800);
     return () => {
@@ -53,7 +53,7 @@ export default function Splash() {
         onClick={() => {
           setVisible(false);
           try {
-            sessionStorage.setItem("manara-welcome", "1");
+            localStorage.setItem("manara-welcome", "1");
           } catch {}
         }}
       >

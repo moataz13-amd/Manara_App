@@ -3010,41 +3010,24 @@ body.reading-mushaf {
   background: var(--primary);
 }
 
-/* Scroll page content independently from the persistent bottom navigation. */
+/* Allow the browser's native mobile scrolling and pull-to-refresh. */
 @media (max-width: 700px) {
-  html, body {
-    height: 100%;
-    overflow: hidden;
+  body:not(.reading-mushaf) {
+    overflow: visible;
+    overscroll-behavior-y: auto;
   }
-  #root { height: 100%; }
-  .app {
-    height: 100dvh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
+  body:not(.reading-mushaf) .app {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    overscroll-behavior-y: auto;
   }
-  .reading-mushaf .app { overflow: hidden; }
   body:not(.reading-mushaf) > .mobile-navigation-layer > .mobile-nav {
     position: fixed;
     bottom: calc(20px + env(safe-area-inset-bottom));
     transform: translateZ(0);
     transition: none;
   }
-}
-
-.surah-row .index-surah-name {
-  font-family: var(--font-surah-name);
-  font-size: 34px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-.index-juz-name { font-size: 28px; line-height: 1.6; }
-.selected-juz-heading {
-  font-size: 32px;
-  font-weight: 400;
-  margin-block: 18px 12px;
-  text-align: right;
 }
 
 /* Give long calligraphic juz names enough space at every screen width. */
@@ -3095,4 +3078,45 @@ body.reading-mushaf {
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+/* Immersive reading leaves only the page number below the Quran. */
+.reading-mushaf main {
+  padding: 0;
+  max-width: none;
+}
+.paged-reader {
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  padding: max(8px, env(safe-area-inset-top)) 12px 0;
+}
+.mushaf-page-frame {
+  width: 100%;
+  max-width: 780px;
+  margin-inline: auto;
+}
+.mushaf-focus-mode .mushaf-verse-tools { display: none; }
+.mushaf-page-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: calc(44px + env(safe-area-inset-bottom));
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  border: 0;
+  margin: 0;
+}
+.mushaf-page-indicator > span {
+  display: grid;
+  place-items: center;
+  min-width: 52px;
+  height: 30px;
+  padding: 2px 14px;
+  border-radius: 20px;
+  background: var(--mint-soft);
+  color: var(--primary);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
 }

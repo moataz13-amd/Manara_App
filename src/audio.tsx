@@ -1,3 +1,4 @@
+import { usePrefs } from "./store";
 import { create } from "zustand";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -21,7 +22,10 @@ interface Track {
 export const useAudio = create<{
   track: Track | null;
   setTrack: (track: Track | null) => void;
-}>((set) => ({ track: null, setTrack: (track) => set({ track }) }));
+}>((set) => ({
+  track: null,
+  setTrack: (track) => set((state) => state.track?.url === track?.url ? state : { track }),
+}));
 export function startRecitation(reciter: Reciter, surah: Surah) {
   const recording = reciter.moshaf.find((m) =>
     m.surah_list.split(",").includes(String(surah.number)),
@@ -42,6 +46,9 @@ export function AudioPlayer() {
   const { track, setTrack } = useAudio();
   const quran = useQuran();
   const audio = useRef<HTMLAudioElement>(null);
+  const playRequest = useRef(0);
+  const counted = useRef(false);
+  const savedSecond = useRef(-1);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -64,13 +71,19 @@ export function AudioPlayer() {
   };
   useEffect(() => {
     if (!track) return;
+    counted.current = false;
+    savedSecond.current = -1;
     setError("");
     setProgress(0);
     setDuration(0);
     setLoading(true);
-    audio.current?.play().catch(() => {
+    const request = ++playRequest.current;
+    const element = audio.current;
+    element?.play().catch((reason: DOMException) => {
+      if (request !== playRequest.current || reason.name === "AbortError") return;
       setPlaying(false);
       setLoading(false);
+      setError("اضغط تشغيل لبدء التلاوة");
     });
     if ("mediaSession" in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
@@ -85,7 +98,8 @@ export function AudioPlayer() {
         audio.current?.pause(),
       );
     }
-  }, [track]);
+    return () => { playRequest.current++; };
+  }, [track?.url]);
   if (!track) return null;
   const time = (s: number) =>
     `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -94,14 +108,40 @@ export function AudioPlayer() {
       <audio
         ref={audio}
         src={track.url}
+        preload="auto"
         loop={repeat}
         onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-        onTimeUpdate={() => setProgress(audio.current?.currentTime || 0)}
-        onLoadedMetadata={() => setDuration(audio.current?.duration || 0)}
+        onPause={() => {
+          setPlaying(false);
+          if (audio.current) usePrefs.getState().set({ playback: { surah: track.surah, reciter: track.reciter, position: audio.current.currentTime } });
+        }}
+        onTimeUpdate={() => {
+          const position = audio.current?.currentTime || 0;
+          setProgress(Math.floor(position));
+          if (position >= 10 && !counted.current) {
+            counted.current = true;
+            usePrefs.getState().recordListening(track.surah, track.reciter);
+          }
+          const interval = Math.floor(position / 5);
+          if (interval !== savedSecond.current) {
+            savedSecond.current = interval;
+            usePrefs.getState().set({ playback: { surah: track.surah, reciter: track.reciter, position } });
+          }
+        }}
+        onLoadedMetadata={() => {
+          const element = audio.current;
+          if (!element) return;
+          setDuration(Number.isFinite(element.duration) ? element.duration : 0);
+          const saved = usePrefs.getState().playback;
+          if (saved?.surah === track.surah && saved.reciter === track.reciter && saved.position > 0 && saved.position < element.duration - 2) element.currentTime = saved.position;
+        }}
         onWaiting={() => setLoading(true)}
         onCanPlay={() => setLoading(false)}
+        onPlaying={() => { setLoading(false); setPlaying(true); setError(""); }}
         onEnded={() => {
+          if (!counted.current) usePrefs.getState().recordListening(track.surah, track.reciter);
+          counted.current = true;
+          usePrefs.getState().set({ playback: null });
           setPlaying(false);
           if (!repeat) skip(1);
         }}

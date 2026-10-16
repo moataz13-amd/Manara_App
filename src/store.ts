@@ -7,6 +7,9 @@ export interface Place {
   timezone: string;
 }
 interface Preferences {
+  listening: Record<string, { plays: number; lastPlayed: number; reciter: string }>;
+  playback: { surah: number; reciter: string; position: number } | null;
+  recordListening: (surah: number, reciter: string) => void;
   reminders: boolean;
   reminderOffset: number;
   theme: string;
@@ -31,6 +34,14 @@ interface Preferences {
 export const usePrefs = create<Preferences>()(
   persist(
     (set) => ({
+      listening: {},
+      playback: null,
+      recordListening: (surah, reciter) => set((state) => ({
+        listening: { ...state.listening, [surah]: {
+          plays: (state.listening[surah]?.plays || 0) + 1,
+          lastPlayed: Date.now(), reciter,
+        } },
+      })),
       reminders: false,
       reminderOffset: 0,
       theme: "light",

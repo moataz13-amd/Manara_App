@@ -1,4 +1,4 @@
-import { useState, useRef, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpLeft,
@@ -133,7 +133,10 @@ export default function Home() {
   const reciters = useReciters();
   const adhkar = useAdhkar();
   const { last, bookmarks, toggleBookmark } = usePrefs();
-  const [selectionOffset, setSelectionOffset] = useState(0);
+  const listening = usePrefs((state) => state.listening);
+  const topSurahs = Object.entries(listening)
+    .sort(([, a], [, b]) => b.plays - a.plays || b.lastPlayed - a.lastPlayed)
+    .slice(0, 5).map(([number]) => Number(number));
   const surah = quran.data?.find((s) => s.number === last.surah);
   const featured = [112, 54, 123, 92].flatMap(
     (id) => reciters.data?.find((r) => r.id === id) || [],
@@ -236,23 +239,29 @@ export default function Home() {
         </CardCarousel>
       </Section>
       <div className="home-bottom-grid">
-        <Section title="مختارات من القرآن" to="/quran">
+        <Section title="الأكثر استماعًا" to="/quran">
           <CardCarousel className="selection-carousel" label="مختارات التلاوات">
-            {[12, 18, 36].map((base) => {
-              const number = ((base - 1 + selectionOffset + 114) % 114) + 1;
+            {!topSurahs.length && <p className="muted">ابدأ الاستماع، وستظهر هنا أكثر ٥ سور تستمع إليها.</p>}
+            {topSurahs.map((number, index) => {
+              const preferred = reciters.data?.find((r) => r.name === listening[number]?.reciter) || reciters.data?.find((r) => r.id === usePrefs.getState().reciter) || featured[0];
+              const playNeighbor = (delta: number) => {
+                const next = topSurahs[(index + delta + topSurahs.length) % topSurahs.length];
+                const nextReciter = reciters.data?.find((r) => r.name === listening[next]?.reciter) || preferred;
+                if (nextReciter && quran.data?.[next - 1]) startRecitation(nextReciter, quran.data[next - 1]);
+              };
               const selectedSurah = quran.data?.[number - 1];
               const bookmark = `${number}:1`;
               return (
-                <article className="selection-card patterned" key={base}>
+                <article className="selection-card patterned" key={number}>
                   <Link to={`/quran/${number}`} aria-label={selectedSurah?.name || `سورة ${number}`}>
                     <h2 className="surah-calligraphy" dir="ltr">{String(number).padStart(3, "0")}</h2>
                   </Link>
-                  <p>{featured[0]?.name || "تلاوة القرآن الكريم"}</p>
+                  <p>{preferred?.name || "تلاوة القرآن الكريم"}</p>
                   <div className="selection-controls" dir="ltr">
                     <Link to={`/quran/${number}`} aria-label="افتح السورة"><BookOpen size={12} /></Link>
-                    <button aria-label="السورة السابقة" onClick={() => setSelectionOffset((value) => (value + 113) % 114)}><SkipBack size={12} fill="currentColor" /></button>
-                    <button aria-label="تشغيل التلاوة" disabled={!featured[0] || !selectedSurah} onClick={() => { if (featured[0] && selectedSurah) startRecitation(featured[0], selectedSurah); }}><Play size={13} fill="currentColor" /></button>
-                    <button aria-label="السورة التالية" onClick={() => setSelectionOffset((value) => (value + 1) % 114)}><SkipForward size={12} fill="currentColor" /></button>
+                    <button aria-label="السورة السابقة" onClick={() => playNeighbor(-1)}><SkipBack size={12} fill="currentColor" /></button>
+                    <button aria-label="تشغيل التلاوة" disabled={!preferred || !selectedSurah} onClick={() => { if (preferred && selectedSurah) startRecitation(preferred, selectedSurah); }}><Play size={13} fill="currentColor" /></button>
+                    <button aria-label="السورة التالية" onClick={() => playNeighbor(1)}><SkipForward size={12} fill="currentColor" /></button>
                     <button aria-label="حفظ السورة" aria-pressed={bookmarks.includes(bookmark)} onClick={() => toggleBookmark(bookmark)}><Bookmark size={12} fill={bookmarks.includes(bookmark) ? "currentColor" : "none"} /></button>
                   </div>
                 </article>
