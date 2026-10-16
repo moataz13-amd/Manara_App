@@ -1,4 +1,4 @@
-const CACHE = "manara-v2-brand";
+const CACHE = "manara-v3-fonts";
 self.addEventListener("install", (event) =>
   event.waitUntil(
     caches
@@ -7,6 +7,9 @@ self.addEventListener("install", (event) =>
         cache.addAll([
           "/",
           "/data/quran.json",
+          "/fonts/arbfonts_Qurraan_sora.woff2",
+          "/fonts/UthmanicHafs_v2-1.woff2",
+          "/fonts/Elgharib%20Ajzaa%20Alquran%20Madina.woff2",
           "/data/adhkar.json",
           "/data/reciters.json",
           "/images/Manara_App_H_Logo.svg",
@@ -32,6 +35,10 @@ self.addEventListener("activate", (event) =>
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== location.origin) return;
+  if (url.pathname.startsWith("/fonts/")) {
+    event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+    return;
+  }
   event.respondWith(
     fetch(event.request)
       .then((response) => {

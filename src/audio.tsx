@@ -156,7 +156,6 @@ export function AudioPlayer() {
           <b>{track.title}</b>
           <small>
             {error || track.reciter}
-            {loading && !error ? " · جارٍ التحميل" : ""}
           </small>
         </div>
       </div>
@@ -169,7 +168,8 @@ export function AudioPlayer() {
           <SkipForward size={19} />
         </button>
         <button
-          className="play-button"
+          className={`play-button ${loading ? "is-buffering" : ""}`}
+          aria-busy={loading}
           aria-label={playing ? "إيقاف مؤقت" : "تشغيل"}
           onClick={() =>
             playing
