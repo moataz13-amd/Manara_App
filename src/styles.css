@@ -3222,3 +3222,14 @@ body.reading-mushaf {
   .skeleton-home-top { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .skeleton-block::after { animation: none; } }
+
+/* Installation is a home-page footer card, never an overlay. */
+.install-prompt {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  margin: 24px 0 0;
+  z-index: auto;
+  box-shadow: none;
+}

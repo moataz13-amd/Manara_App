@@ -15,7 +15,7 @@ function isStandalone() {
 export default function InstallPrompt() {
   const [request, setRequest] = useState<InstallEvent | null>(null);
   const [installed, setInstalled] = useState(() => isStandalone() || stored(installedKey) === "1");
-  const [dismissed, setDismissed] = useState(() => Date.now() - Number(stored(dismissedKey) || 0) < 7 * 86400000);
+  const [dismissed, setDismissed] = useState(() => Boolean(stored(dismissedKey)));
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);

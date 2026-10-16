@@ -1,3 +1,4 @@
+import InstallPrompt from "./install-prompt";
 import PageSkeleton from "./page-skeleton";
 import SurahName from "./surah-name";
 import { useRef, type ReactNode } from "react";
@@ -290,6 +291,7 @@ export default function Home() {
         <span>منارة، رفيقك اليومي للقرآن والصلاة</span>
         <span>صُنع بحب، ليطمئن قلبك</span>
       </div>
+      <InstallPrompt />
     </>
   );
 }
