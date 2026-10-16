@@ -1,3 +1,4 @@
+import SurahName from "./surah-name";
 import { useRef, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -254,7 +255,7 @@ export default function Home() {
               return (
                 <article className="selection-card patterned" key={number}>
                   <Link to={`/quran/${number}`} aria-label={selectedSurah?.name || `سورة ${number}`}>
-                    <h2 className="surah-calligraphy" dir="ltr">{String(number).padStart(3, "0")}</h2>
+                    <h2 className="surah-calligraphy"><SurahName number={number} name={selectedSurah?.name || `سورة ${number}`} /></h2>
                   </Link>
                   <p>{preferred?.name || "تلاوة القرآن الكريم"}</p>
                   <div className="selection-controls" dir="ltr">

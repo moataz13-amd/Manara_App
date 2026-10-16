@@ -1,3 +1,4 @@
+import SurahName from "./surah-name";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Headphones, Play, Search, Check } from "lucide-react";
@@ -70,7 +71,7 @@ export default function Reciters() {
                 >
                   <span className="number-medallion">{s.number}</span>
                   <h3 className="mushaf-surah-name reciter-surah-name" aria-label={s.name} dir="ltr">
-                    {String(s.number).padStart(3, "0")}
+                    <SurahName number={s.number} name={s.name} />
                   </h3>
                   <Play size={18} />
                 </button>
