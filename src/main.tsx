@@ -28,6 +28,7 @@ import { usePrefs } from "./store";
 import { AudioPlayer, useAudio } from "./audio";
 import "./styles.css";
 import Splash from "./splash";
+import InstallPrompt from "./install-prompt";
 import { PrayerReminder } from "./notifications";
 const Home = lazy(() => import("./home"));
 const Quran = lazy(() => import("./quran"));
@@ -189,6 +190,7 @@ function App() {
       <AudioPlayer />
       <PrayerReminder />
       <Splash />
+      <InstallPrompt />
     </div>
   );
 }
