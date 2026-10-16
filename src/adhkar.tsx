@@ -1,3 +1,4 @@
+import SwipePages from "./swipe-pages";
 import { tasbihProgress, tasbihAdhkar } from "./tasbih";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -79,7 +80,7 @@ export default function Adhkar() {
             ))}
         </div>
       ) : (
-        <div className="dhikr-list">
+        <SwipePages key={`${category}:${favorites}:${search}`} label="الأذكار">
           {!rows?.length && <Empty>لا توجد أذكار هنا بعد.</Empty>}
           {rows?.map(({ row, id }) => {
             const key = `${day}:${id}`;
@@ -151,7 +152,7 @@ export default function Adhkar() {
               </article>
             );
           })}
-        </div>
+        </SwipePages>
       )}
     </>
   );

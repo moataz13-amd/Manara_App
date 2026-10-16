@@ -291,6 +291,9 @@ export default function Home() {
         <span>منارة، رفيقك اليومي للقرآن والصلاة</span>
         <span>صُنع بحب، ليطمئن قلبك</span>
       </div>
+      <Link to="/hadith" className="hadith-home-link library-banner patterned">
+        <BookOpen size={30} /><div><h2>من هدي النبي ﷺ</h2><p>تصفّح الأربعين النووية واحفظ أحاديثك المفضلة.</p></div><ChevronLeft size={20} />
+      </Link>
       <InstallPrompt />
     </>
   );

@@ -31,6 +31,7 @@ import "./styles.css";
 import Splash from "./splash";
 import { PrayerReminder } from "./notifications";
 const Home = lazy(() => import("./home"));
+const Hadith = lazy(() => import("./hadith"));
 const Quran = lazy(() => import("./quran"));
 const Adhkar = lazy(() => import("./adhkar"));
 const Tasbih = lazy(() =>
@@ -45,6 +46,7 @@ const links = [
   { to: "/", label: "الرئيسية", icon: House },
   { to: "/quran", label: "القرآن الكريم", icon: BookOpen },
   { to: "/reciters", label: "القرّاء والتلاوات", icon: AudioLines },
+  { to: "/hadith", label: "الأحاديث النبوية", icon: BookOpen },
   { to: "/adhkar", label: "الأذكار والدعاء", icon: HandHeart },
   { to: "/tasbih", label: "المسبحة", icon: CircleDot },
   { to: "/prayers", label: "مواقيت الصلاة", icon: Sun },
@@ -151,6 +153,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/quran" element={<Quran />} />
               <Route path="/quran/:id" element={<Quran />} />
+              <Route path="/hadith" element={<Hadith />} />
               <Route path="/adhkar" element={<Adhkar />} />
               <Route path="/tasbih" element={<Tasbih />} />
               <Route path="/reciters" element={<Reciters />} />

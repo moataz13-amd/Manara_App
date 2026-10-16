@@ -3319,3 +3319,43 @@ body.reading-mushaf {
   }
   .all-reciters .reciter-list-card > .text-link svg { width: 20px; height: 20px; }
 }
+
+.hadith-list { display: grid; gap: 18px; }
+.hadith-card { padding: 24px 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; }
+.hadith-card header, .hadith-card footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hadith-card h2 { font-size: 17px; }
+.hadith-text { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 25px; line-height: 2.05; white-space: pre-line; overflow-wrap: break-word; margin: 20px 0; }
+.hadith-card footer { border-top: 1px solid var(--border); padding-top: 12px; }
+.hadith-card footer a { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); font-size: 13px; }
+.hadith-card footer > div { display: flex; gap: 8px; }
+.hadith-card footer button { width: 44px; height: 44px; border-radius: 50%; color: var(--primary); background: var(--mint-soft); }
+.hadith-result-count { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+.hadith-more { margin: 24px auto 0; display: flex; }
+.hadith-home-link { margin-top: 24px; }
+@media (max-width: 700px) {
+  .hadith-card { padding: 18px 16px; border-radius: 20px; }
+  .hadith-text { font-size: 23px; line-height: 2; }
+}
+
+.swipe-pages { width: 100%; min-width: 0; }
+.swipe-page-content {
+  min-height: 300px;
+  max-height: 65dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  touch-action: pan-y pinch-zoom;
+  overscroll-behavior-x: contain;
+  border-radius: 24px;
+}
+.swipe-page-content > .hadith-card,
+.swipe-page-content > .dhikr-full { margin: 0; min-height: 300px; }
+.swipe-page-navigation { display: flex; align-items: center; justify-content: center; gap: 24px; margin-top: 14px; }
+.swipe-page-navigation button { width: 44px; height: 44px; border-radius: 50%; background: var(--mint-soft); color: var(--primary); }
+.swipe-page-navigation span { min-width: 70px; text-align: center; color: var(--primary); }
+.swipe-hint { text-align: center; font-size: 12px; color: var(--muted); margin: 8px 0; }
+
+.hadith-book-filter { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-block: 20px; color: var(--primary); }
+.hadith-book-filter select { max-width: 100%; min-width: 220px; }
+.hadith-grades { margin-block: 14px; font-size: 14px; color: var(--muted); }
+.hadith-grades summary { cursor: pointer; }
+.hadith-grades li { margin-block: 6px; }

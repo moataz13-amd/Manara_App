@@ -11,6 +11,7 @@ self.addEventListener("install", (event) =>
           "/fonts/UthmanicHafs_v2-1.woff2",
           "/fonts/Elgharib%20Ajzaa%20Alquran%20Madina.woff2",
           "/data/adhkar.json",
+          "/data/hadith.json",
           "/data/reciters.json",
           "/images/Manara_App_H_Logo.svg",
           "/images/Manara_App_Logo.svg",

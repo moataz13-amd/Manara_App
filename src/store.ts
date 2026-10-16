@@ -7,6 +7,8 @@ export interface Place {
   timezone: string;
 }
 interface Preferences {
+  hadithFavorites: number[];
+  hadithSavedKeys: string[];
   listening: Record<string, { plays: number; lastPlayed: number; reciter: string }>;
   playback: { surah: number; reciter: string; position: number } | null;
   recordListening: (surah: number, reciter: string) => void;
@@ -34,6 +36,8 @@ interface Preferences {
 export const usePrefs = create<Preferences>()(
   persist(
     (set) => ({
+      hadithFavorites: [],
+      hadithSavedKeys: [],
       listening: {},
       playback: null,
       recordListening: (surah, reciter) => set((state) => ({
