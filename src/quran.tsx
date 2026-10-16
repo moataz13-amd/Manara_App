@@ -93,7 +93,7 @@ export default function Quran() {
             >
               <span className="number-medallion">{s.number}</span>
               <div>
-                <h3>{s.name}</h3>
+                <h3 className="index-surah-name mushaf-surah-name" dir="ltr" aria-label={s.name}>{String(s.number).padStart(3, "0")}</h3>
                 <small>
                   {s.revelationType === "Meccan" ? "مكية" : "مدنية"} ·{" "}
                   {s.ayahs.length} آية
@@ -118,13 +118,16 @@ export default function Quran() {
               <button
                 className={juz === i + 1 ? "active" : ""}
                 key={i}
+                aria-label={`الجزء ${i + 1}`}
+                aria-pressed={juz === i + 1}
                 onClick={() => setJuz(i + 1)}
               >
-                الجزء {i + 1}
+                <span className="mushaf-juz-name index-juz-name" dir="ltr">{String(i + 1)}</span>
               </button>
             ))}
           </div>
-          <div className="surah-grid">
+          <h2 className="selected-juz-heading mushaf-juz-name" dir="ltr" aria-label={`سور الجزء ${juz}`}>{String(juz)}</h2>
+          <div className="surah-grid" aria-label={`سور الجزء ${juz}`} aria-live="polite">
             {query.data
               ?.filter((s) => s.ayahs.some((a) => a.juz === juz))
               .map((s) => (
@@ -133,7 +136,11 @@ export default function Quran() {
                   key={s.number}
                   to={`/quran/${s.number}#ayah-${s.ayahs.find((a) => a.juz === juz)?.numberInSurah}`}
                 >
-                  {s.name}
+                  <span className="number-medallion">{s.number.toLocaleString("ar-EG")}</span>
+                  <div>
+                    <h3 className="index-surah-name mushaf-surah-name" dir="ltr" aria-label={s.name}>{String(s.number).padStart(3, "0")}</h3>
+                    <small>{s.revelationType === "Meccan" ? "مكية" : "مدنية"} · {s.ayahs.length.toLocaleString("ar-EG")} آية</small>
+                  </div>
                 </Link>
               ))}
           </div>
