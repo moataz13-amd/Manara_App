@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 54" fill="none" stroke="#a5763d" stroke-width="1.2">
+  <rect x="1" y="1" width="518" height="52" rx="3" fill="#f7eedb"/>
+  <path d="M76 4H444Q452 4 458 12L473 20Q481 27 473 34L458 42Q452 50 444 50H76Q68 50 62 42L47 34Q39 27 47 20L62 12Q68 4 76 4Z" fill="#fff9e6"/>
+  <g id="ornament">
+    <path d="M2 27Q17 5 32 20Q42 27 32 34Q17 49 2 27ZM20 27q7-12 13 0q-6 12-13 0ZM35 17Q53 15 54 5M35 37Q53 39 54 49M44 22q22-1 20-13q-2-8-8-2q-4 6 3 6M44 32q22 1 20 13q-2 8-8 2q-4-6 3-6M49 27q20-8 23-20M49 27q20 8 23 20"/>
+    <circle cx="15" cy="27" r="2"/><circle cx="45" cy="12" r="3"/><circle cx="45" cy="42" r="3"/>
+  </g>
+  <use href="#ornament" transform="translate(520 0) scale(-1 1)"/>
+</svg>
