@@ -1,3 +1,4 @@
+import { loadRoute } from "./route-loader";
 import "./install-state";
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -30,17 +31,17 @@ import { AudioPlayer, useAudio } from "./audio";
 import "./styles.css";
 import Splash from "./splash";
 import { PrayerReminder } from "./notifications";
-const Home = lazy(() => import("./home"));
-const Hadith = lazy(() => import("./hadith"));
-const Quran = lazy(() => import("./quran"));
-const Adhkar = lazy(() => import("./adhkar"));
+const Home = lazy(() => loadRoute(() => import("./home")));
+const Hadith = lazy(() => loadRoute(() => import("./hadith")));
+const Quran = lazy(() => loadRoute(() => import("./quran")));
+const Adhkar = lazy(() => loadRoute(() => import("./adhkar")));
 const Tasbih = lazy(() =>
-  import("./adhkar").then((m) => ({ default: m.Tasbih })),
+  loadRoute(() => import("./adhkar").then((m) => ({ default: m.Tasbih }))),
 );
-const Reciters = lazy(() => import("./reciters"));
-const Settings = lazy(() => import("./settings"));
+const Reciters = lazy(() => loadRoute(() => import("./reciters")));
+const Settings = lazy(() => loadRoute(() => import("./settings")));
 const Prayers = lazy(() =>
-  import("./settings").then((m) => ({ default: m.Prayers })),
+  loadRoute(() => import("./settings").then((m) => ({ default: m.Prayers }))),
 );
 const links = [
   { to: "/", label: "الرئيسية", icon: House },

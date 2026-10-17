@@ -4,7 +4,10 @@ import { Cloud, LogIn } from "lucide-react";
 import { usePrefs } from "./store";
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const client = url && key ? createClient(url, key) : null;
+const client = (() => {
+  if (!url || !key) return null;
+  try { return createClient(url, key); } catch { return null; }
+})();
 export default function Account() {
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
@@ -12,7 +15,7 @@ export default function Account() {
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!client) return;
-    client.auth.getUser().then(({ data }) => setUser(data.user));
+    client.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => setUser(null));
     const { data } = client.auth.onAuthStateChange((_event, session) =>
       setUser(session?.user || null),
     );

@@ -1,6 +1,6 @@
 import { validCoordinates, validTimeZone } from "./location";
-import { useState } from "react";
-import Account from "./auth";
+import { lazy, Suspense, useState } from "react";
+const Account = lazy(() => import("./auth"));
 import { NotificationSettings } from "./notifications";
 import {
   MapPin,
@@ -122,7 +122,7 @@ export function LocationSettings() {
     );
   };
   return (
-    <div className="settings-card">
+    <div className="settings-card" id="location">
       <h2>
         <MapPin size={21} /> موقعك
       </h2>
@@ -318,7 +318,7 @@ export default function Settings() {
       <Heading title="الإعدادات" subtitle="اجعل منارة أقرب إليك." />
       <div className="settings-grid">
         <div>
-          <Account />
+          <Suspense fallback={<p role="status">جارٍ تحميل إعدادات الحساب…</p>}><Account /></Suspense>
           <NotificationSettings />
           <div className="settings-card">
             <h2>

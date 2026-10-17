@@ -3385,3 +3385,19 @@ body.reading-mushaf {
 @media (prefers-reduced-motion: reduce) {
   .smooth-splash, .splash-artwork-layer, .smooth-splash .splash-skip { transition: none; transform: none; }
 }
+
+/* Explicit index typography prevents general h3 rules from rendering glyph IDs. */
+.surah-row .index-surah-name {
+  font-family: var(--font-surah-name);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.7;
+  min-width: 0;
+  margin: 0;
+}
+.surah-row > div { min-width: 0; }
+.surah-row .index-surah-name .surah-name-fallback {
+  font-family: "Amiri", "Noto Naskh Arabic", serif;
+  font-size: 0.75em;
+  opacity: 1;
+}

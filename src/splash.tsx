@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 const artwork = ["/images/splash-screen-1.svg", "/images/splash-screen-2.svg"];
 export default function Splash() {
-  const [visible, setVisible] = useState(() => {
-    try { return !localStorage.getItem("manara-welcome"); } catch { return true; }
-  });
+  // Replay the launch animation on each new app load; user data is separate.
+  const [visible, setVisible] = useState(true);
   const [ready, setReady] = useState(false);
   const [step, setStep] = useState(0);
   const [closing, setClosing] = useState(false);
@@ -13,7 +12,11 @@ export default function Splash() {
     const images = artwork.map((src) => {
       const image = new Image();
       image.src = src;
-      return image.decode().catch(() => {});
+      if (typeof image.decode === "function") return image.decode().catch(() => {});
+      return new Promise<void>((resolve) => {
+        if (image.complete) resolve();
+        else { image.onload = () => resolve(); image.onerror = () => resolve(); }
+      });
     });
     // A slow asset must never trap the user on the welcome screen.
     let timeout: ReturnType<typeof setTimeout>;
