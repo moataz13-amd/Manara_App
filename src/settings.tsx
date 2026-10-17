@@ -1,4 +1,4 @@
-import { validCoordinates, validTimeZone } from "./location";
+import { resolveCurrentCity, validCoordinates, validTimeZone } from "./location";
 import { lazy, Suspense, useState } from "react";
 const Account = lazy(() => import("./auth"));
 import { NotificationSettings } from "./notifications";
@@ -84,6 +84,7 @@ export function LocationSettings() {
         const timeout = window.setTimeout(() => controller.abort(), 10000);
         try {
           if (!validCoordinates(latitude, longitude)) throw new Error("Invalid coordinates");
+          const cityName = resolveCurrentCity(latitude, longitude, controller.signal).catch(() => null);
           const r = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&timezone=auto&forecast_days=1`,
             { signal: controller.signal },
@@ -91,7 +92,8 @@ export function LocationSettings() {
           if (!r.ok) throw new Error();
           const result = await r.json();
           if (!validTimeZone(result.timezone)) throw new Error("Invalid timezone");
-          const placeName = name.trim() || `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+          const resolvedName = await cityName;
+          const placeName = resolvedName || "موقعي الحالي";
           prefs.set({
             place: {
               name: placeName,
@@ -100,7 +102,7 @@ export function LocationSettings() {
               timezone: result.timezone,
             },
           });
-          setStatus("تم حفظ الموقع والمنطقة الزمنية.");
+          setStatus(resolvedName ? "تم حفظ المدينة والموقع." : "تم حفظ الموقع، لكن تعذّر معرفة اسم المدينة الآن. يمكنك إعادة المحاولة أو إدخال اسمها يدويًا.");
         } catch {
           setStatus(
             "تعذّر تحديد المنطقة الزمنية. أدخل الإحداثيات والمنطقة الزمنية يدويًا.",
@@ -373,7 +375,7 @@ export default function Settings() {
             </p>
             <p>
               لا يُطلب موقعك إلا عند الضغط على «استخدم موقعي». تستخدم خدمة
-              Open-Meteo لتحديد المنطقة الزمنية.
+              Open-Meteo لتحديد المنطقة الزمنية وBigDataCloud لمعرفة اسم المدينة.
             </p>
             <button
               className="secondary"
