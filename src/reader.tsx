@@ -57,6 +57,11 @@ export default function Reader({
   } | null>(null);
   const busy = useRef(false);
   const suppressClickUntil = useRef(0);
+  const longPress = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearLongPress = () => {
+    if (longPress.current !== null) clearTimeout(longPress.current);
+    longPress.current = null;
+  };
   const incoming = useRef(0);
   const animation = useRef<Animation | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -83,6 +88,7 @@ export default function Reader({
     }
   };
   const cancelDrag = () => {
+    clearLongPress();
     gesture.current = null;
     setDragging(false);
     void settle(0).then(() => {
@@ -108,6 +114,7 @@ export default function Reader({
     }
     incoming.current = 0;
     return () => {
+      clearLongPress();
       animation.current?.cancel();
       gesture.current = null;
     };
@@ -263,6 +270,7 @@ export default function Reader({
           }
         }}
         onPointerDown={(e) => {
+          clearLongPress();
           if (!e.isPrimary) {
             if (gesture.current) cancelDrag();
             return;
@@ -277,12 +285,27 @@ export default function Reader({
             dx: 0,
             dragging: false,
           };
+          const verse = (e.target as HTMLElement).closest<HTMLElement>("[data-verse-key]");
+          if (verse) {
+            const [surahNumber, ayahNumber] = verse.dataset.verseKey!.split(":").map(Number);
+            const verseSurah = surahs.find((s) => s.number === surahNumber);
+            if (verseSurah) longPress.current = setTimeout(() => {
+              longPress.current = null;
+              gesture.current = null;
+              suppressClickUntil.current = Date.now() + 800;
+              setSelected(`${surahNumber}:${ayahNumber}`);
+              setCopied(false);
+              prefs.set({ last: { surah: surahNumber, ayah: ayahNumber } });
+              setSharing({ surah: verseSurah, initial: ayahNumber });
+            }, 550);
+          }
         }}
         onPointerMove={(e) => {
           const g = gesture.current;
           if (!g || g.id !== e.pointerId || !sheet.current) return;
           const dx = e.clientX - g.x,
             dy = e.clientY - g.y;
+          if (Math.hypot(dx, dy) > 7) clearLongPress();
           if (!g.dragging) {
             if (Math.abs(dy) > 20 && Math.abs(dy) > Math.abs(dx) * 1.5) {
               gesture.current = null;
@@ -300,6 +323,7 @@ export default function Reader({
           sheet.current.style.transform = `translateX(${blocked ? dx * 0.18 : dx}px)`;
         }}
         onPointerUp={async (e) => {
+          clearLongPress();
           const g = gesture.current;
           if (!g || g.id !== e.pointerId) return;
           gesture.current = null;
@@ -326,6 +350,7 @@ export default function Reader({
           } else cancelDrag();
         }}
         onPointerCancel={() => {
+          clearLongPress();
           if (gesture.current) cancelDrag();
         }}
         onLostPointerCapture={(e) => {
@@ -378,7 +403,16 @@ export default function Reader({
                   const endingStart = opening.text.lastIndexOf(" ") + 1;
                   return (
                     <span
-                      className="mushaf-verse"
+                      className={`mushaf-verse ${selected === `${s.number}:${a.numberInSurah}` ? "verse-selected" : ""}`}
+                      data-verse-key={`${s.number}:${a.numberInSurah}`}
+                      onContextMenu={(event) => event.preventDefault()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (Date.now() < suppressClickUntil.current || (event.target as HTMLElement).closest("button")) return;
+                        setSelected(`${s.number}:${a.numberInSurah}`);
+                        setCopied(false);
+                        prefs.set({ last: { surah: s.number, ayah: a.numberInSurah } });
+                      }}
                       key={a.number}
                       id={`ayah-${s.number}-${a.numberInSurah}`}
                     >
@@ -440,7 +474,7 @@ export default function Reader({
             </button>
           </>
         ) : (
-          <span>اضغط على رقم الآية للحفظ أو المشاركة</span>
+          <span>اضغط على الآية لتحديدها، أو اضغط مطوّلًا للمشاركة</span>
         )}
       </div>
       <footer className="mushaf-pagination mushaf-page-indicator">

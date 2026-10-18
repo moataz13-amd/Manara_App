@@ -7,6 +7,9 @@ export interface ShareContent { title: string; text: string; reference: string; 
 export async function makeShareImages(content: ShareContent): Promise<File[]> {
   await Promise.all([document.fonts.load('36px "Amiri"'), document.fonts.load('26px "Tajawal"'), document.fonts.load('bold 28px "Tajawal"')]);
   const mushaf = content.layout === "mushaf";
+  const logo = new Image();
+  logo.src = "/images/Manara_App_H_Logo.svg";
+  await logo.decode();
   let frame: HTMLImageElement | undefined;
   if (mushaf) {
     await Promise.all([document.fonts.load('36px "Manara Uthmanic Hafs"'), document.fonts.load('70px "Manara Surah"', String(content.surahNumber).padStart(3, "0"))]);
@@ -37,11 +40,13 @@ export async function makeShareImages(content: ShareContent): Promise<File[]> {
   for (let offset = 0; offset < lines.length; offset += perPage) {
     const chunk = lines.slice(offset, offset + perPage);
     const textTop = mushaf ? 330 : 235;
-    canvas.height = Math.max(660, textTop + 135 + chunk.length * 68);
+    canvas.height = Math.max(660, textTop + (mushaf ? 40 : 135) + chunk.length * 68);
     ctx.fillStyle = "#f6faf7"; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#bddbd2"; ctx.lineWidth = 2; ctx.strokeRect(36, 36, 1008, canvas.height - 72);
     ctx.direction = "rtl"; ctx.textAlign = "center"; ctx.fillStyle = "#104f40";
-    ctx.font = 'bold 28px "Tajawal", sans-serif'; ctx.fillText("منارة", 540, 94);
+    const logoHeight = 64;
+    const logoWidth = logoHeight * logo.naturalWidth / logo.naturalHeight;
+    ctx.drawImage(logo, 540 - logoWidth / 2, 46, logoWidth, logoHeight);
     if (frame && content.surahNumber) {
       ctx.drawImage(frame, 90, 120, 900, 176);
       ctx.save(); ctx.direction = "ltr";
@@ -82,10 +87,12 @@ export async function makeShareImages(content: ShareContent): Promise<File[]> {
         ctx.textAlign = "center";
       } else ctx.fillText(line, 540, textTop + index * 68);
     });
-    ctx.font = '24px "Tajawal", sans-serif';
-    ctx.fillText(content.reference, 540, canvas.height - 100, 900);
-    ctx.font = '20px "Tajawal", sans-serif';
-    ctx.fillText(`منارة · ${Math.floor(offset / perPage) + 1} / ${Math.ceil(lines.length / perPage)}`, 540, canvas.height - 60);
+    if (!mushaf) {
+      ctx.font = '24px "Tajawal", sans-serif';
+      ctx.fillText(content.reference, 540, canvas.height - 100, 900);
+      ctx.font = '20px "Tajawal", sans-serif';
+      ctx.fillText(`منارة · ${Math.floor(offset / perPage) + 1} / ${Math.ceil(lines.length / perPage)}`, 540, canvas.height - 60);
+    }
     const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error("image")), "image/png"));
     files.push(new File([blob], `manara-${files.length + 1}.png`, { type: "image/png" }));
   }

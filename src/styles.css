@@ -3429,6 +3429,9 @@ body.reading-mushaf {
 }
 
 .showing-splash { overflow: hidden; }
+.mushaf-verse { cursor: pointer; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+.mushaf-verse.verse-selected { background-color: #78b49d33; border-radius: 5px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+:root[data-theme="dark"] .mushaf-verse.verse-selected { background-color: #9ed8c52e; }
 .share-dialog { width: min(600px, calc(100vw - 24px)); max-height: 88dvh; padding: 24px; border: 1px solid var(--border); border-radius: 24px; background: var(--surface); color: var(--text); overflow-y: auto; overscroll-behavior: contain; }
 .share-dialog::backdrop { background: #061b1399; }
 .share-dialog header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
