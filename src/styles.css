@@ -2879,12 +2879,18 @@ body.reading-mushaf {
 
 .continue-card {
   position: relative;
+  container-type: inline-size;
+  aspect-ratio: 2.57;
+  min-height: 0;
+  border-radius: 12% / 30%;
+  background: #c1ddd5;
+  color: #104f40;
   justify-content: center;
-  padding: 12px 24px;
+  padding: 0;
 }
 .continue-card .surah-calligraphy {
   position: absolute;
-  inset: 0;
+  inset: 12% 8% 21%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2896,12 +2902,18 @@ body.reading-mushaf {
 }
 .continue-card small {
   position: absolute;
-  bottom: 9px;
-  inset-inline: 16px;
+  bottom: 9%;
+  inset-inline: 6%;
+  font-size: clamp(10px, 3.2cqw, 15px);
+  line-height: 1.4;
   text-align: center;
 }
 
-.continue-card .surah-calligraphy { font-size: clamp(80px, 9vw, 108px); }
+.continue-card .surah-calligraphy { font-size: 30cqw; }
+.continue-card .surah-name-glyph { line-height: 1; }
+.continue-card .surah-name-fallback { font-size: 0.45em; }
+.continue-card .ribbon { left: 9%; top: -4%; width: 9%; height: 36%; }
+.continue-card.patterned::after { background-position: center bottom; opacity: 0.45; }
 .home-bottom-grid > *, .home-top-grid > * { min-width: 0; }
 .draggable-cards {
   display: flex;

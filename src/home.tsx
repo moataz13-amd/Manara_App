@@ -188,17 +188,17 @@ export default function Home() {
             to={`/quran/${last.surah}#ayah-${last.ayah}`}
             className="continue-card patterned"
           >
-            <Bookmark className="ribbon" fill="currentColor" />
+            <Bookmark className="ribbon" fill="currentColor" preserveAspectRatio="none" aria-hidden="true" />
             <h2
               className="surah-calligraphy"
               dir="ltr"
               aria-label={surah?.name || `سورة رقم ${last.surah}`}
             >
-              {String(last.surah).padStart(3, "0")}
+              <SurahName number={last.surah} name={surah?.name || `سورة رقم ${last.surah}`} />
             </h2>
             <small>
               {surah
-                ? `${surah.ayahs.length} آية · ${surah.revelationType === "Meccan" ? "مكية" : "مدنية"} · الآية ${last.ayah}`
+                ? `صفحة ${surah.ayahs.find((ayah) => ayah.numberInSurah === last.ayah)?.page || surah.ayahs[0]?.page} · رقمها ${surah.number} · آياتها ${surah.ayahs.length} · ${surah.revelationType === "Meccan" ? "مكية" : "مدنية"}`
                 : "استكمل وردك اليومي"}
             </small>
           </Link>
