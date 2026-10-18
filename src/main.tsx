@@ -32,6 +32,7 @@ import "./styles.css";
 import Splash from "./splash";
 import { PrayerReminder } from "./notifications";
 const Home = lazy(() => loadRoute(() => import("./home")));
+const Install = lazy(() => loadRoute(() => import("./install")));
 const Hadith = lazy(() => loadRoute(() => import("./hadith")));
 const Quran = lazy(() => loadRoute(() => import("./quran")));
 const Adhkar = lazy(() => loadRoute(() => import("./adhkar")));
@@ -117,6 +118,7 @@ function App() {
           <NavLink className="settings-link" to="/settings">
             <SettingsIcon size={20} /> الإعدادات
           </NavLink>
+          <NavLink className="settings-link" to="/install">تثبيت منارة</NavLink>
           <small>منارة · نورٌ يرافقك</small>
         </div>
       </aside>
@@ -152,6 +154,7 @@ function App() {
           <Suspense fallback={<Status />}>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/install" element={<Install />} />
               <Route path="/quran" element={<Quran />} />
               <Route path="/quran/:id" element={<Quran />} />
               <Route path="/hadith" element={<Hadith />} />
