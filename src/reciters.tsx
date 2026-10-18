@@ -30,7 +30,7 @@ export default function Reciters() {
     normalize(r.name).includes(normalize(search)),
   );
   return (
-    <>
+    <div className="reciters-page library-page">
       <Heading
         title={selected ? selected.name : "أصواتٌ تُطمئن القلب"}
         subtitle="تلاوات القرآن الكريم، بصوت قارئك المفضل."
@@ -45,6 +45,7 @@ export default function Reciters() {
             </div>
             <button
               className="primary"
+              aria-pressed={prefs.reciter === selected.id}
               onClick={() => prefs.set({ reciter: selected.id })}
             >
               {prefs.reciter === selected.id ? (
@@ -86,6 +87,7 @@ export default function Reciters() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="ابحث عن قارئك المفضل…"
+              aria-label="البحث عن قارئ"
             />
           </label>
           <div className="all-reciters">
@@ -109,6 +111,6 @@ export default function Reciters() {
           {!list?.length && <Empty>لا يوجد قارئ بهذا الاسم.</Empty>}
         </>
       )}
-    </>
+    </div>
   );
 }

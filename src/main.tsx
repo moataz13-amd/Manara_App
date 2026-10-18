@@ -52,6 +52,7 @@ const links = [
   { to: "/adhkar", label: "الأذكار والدعاء", icon: HandHeart },
   { to: "/tasbih", label: "المسبحة", icon: CircleDot },
   { to: "/prayers", label: "مواقيت الصلاة", icon: Sun },
+  { to: "/settings", label: "الإعدادات العامة", icon: SettingsIcon },
 ];
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },

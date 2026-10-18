@@ -40,7 +40,7 @@ export default function Quran() {
           .slice(0, 50)
       : [];
   return (
-    <>
+    <div className="quran-index-page library-page">
       <Heading
         title="القرآن الكريم"
         subtitle="افتح قلبك لكلام الله، واجعل لك كل يوم وردًا."
@@ -68,6 +68,7 @@ export default function Quran() {
             <button
               key={key}
               className={tab === key ? "active" : ""}
+              aria-pressed={tab === key}
               onClick={() => setTab(key)}
             >
               {name}
@@ -79,6 +80,7 @@ export default function Quran() {
           <input
             autoFocus={params.has("search")}
             placeholder="ابحث عن سورة أو آية…"
+            aria-label="البحث عن سورة أو آية"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -195,6 +197,6 @@ export default function Quran() {
           )}
         </section>
       )}
-    </>
+    </div>
   );
 }

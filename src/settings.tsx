@@ -278,18 +278,18 @@ function CalculationSettings() {
 export function Prayers() {
   const prayer = usePrayer();
   return (
-    <>
+    <div className="prayers-page">
       <Heading
         title="مواقيت الصلاة"
         subtitle="إن الصلاة كانت على المؤمنين كتابًا موقوتًا"
       />
       <PrayerCard />
       <div className="prayers-layout">
-        <div>
+        <div className="prayer-preferences">
           <LocationSettings />
           <CalculationSettings />
         </div>
-        <div className="settings-card">
+        <div className="settings-card prayer-schedule">
           <h2>صلوات اليوم</h2>
           {prayer.rows.length ? (
             prayer.rows.map((p, i) => {
@@ -300,7 +300,7 @@ export function Prayers() {
                   key={p.key}
                 >
                   <Icon size={25} />
-                  <b>{p.name}</b>
+                  <b>{p.name}{prayer.next?.key === p.key && <small className="next-prayer-label">القادمة</small>}</b>
                   <time>{prayer.format(p.time)}</time>
                 </div>
               );
@@ -310,7 +310,7 @@ export function Prayers() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 export default function Settings() {
