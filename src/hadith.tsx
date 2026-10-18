@@ -1,4 +1,6 @@
 import SwipePages from "./swipe-pages";
+import ShareContentDialog, { type ShareContent } from "./share-content";
+import { Share2 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Heart, Copy, Check, ExternalLink, BookOpen } from "lucide-react";
@@ -31,6 +33,7 @@ export default function HadithPage() {
   const [onlySaved, setOnlySaved] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [copyError, setCopyError] = useState(false);
+  const [sharing, setSharing] = useState<ShareContent | null>(null);
   if (query.isPending) return <Status />;
   if (query.isError) return <Status error retry={() => query.refetch()} />;
   const matches = query.data.filter((hadith) => (!onlySaved || favorites.includes(`${bookId}:${hadith.hadithnumber}`)) && normalize(hadith.text + " " + hadith.hadithnumber).includes(normalize(search)));
@@ -58,6 +61,7 @@ export default function HadithPage() {
           <p className="hadith-text">{hadith.text}</p>
           {!!hadith.grades?.length && <details className="hadith-grades"><summary>درجات الحديث كما وردت في المصدر</summary><ul>{hadith.grades.map((grade, index) => <li key={index}>{grade.name}: {grade.grade}</li>)}</ul></details>}
           <footer>
+            <button aria-label="مشاركة الحديث كنص أو صورة" onClick={() => setSharing({ title: "الحديث الشريف", text: hadith.text, reference: `${book.name}، الحديث ${hadith.hadithnumber}`, url: sourceUrl })}><Share2 size={19} /></button>
             <a href={sourceUrl} target="_blank" rel="noopener noreferrer">المصدر والتخريج <ExternalLink size={15} /></a>
             <div><button aria-label={saved ? "إزالة الحديث من المفضلة" : "حفظ الحديث في المفضلة"} aria-pressed={saved} onClick={() => set({ hadithSavedKeys: saved ? savedKeys.filter((id) => id !== key) : [...savedKeys, key], hadithFavorites: bookId === "nawawi" && saved ? oldFavorites.filter((id) => id !== hadith.hadithnumber) : oldFavorites })}><Heart size={19} fill={saved ? "currentColor" : "none"} /></button>
             <button aria-label="نسخ الحديث" onClick={async () => { try { await navigator.clipboard.writeText(`${hadith.text}\n${book.name}، الحديث ${hadith.hadithnumber}\n${sourceUrl}`); setCopied(key); setCopyError(false); } catch { setCopyError(true); } }}>{copied === key ? <Check size={19} /> : <Copy size={19} />}</button></div>
@@ -65,5 +69,6 @@ export default function HadithPage() {
         </article>;
       }} />
     {!matches.length && <Empty>{onlySaved ? "لا توجد أحاديث محفوظة تطابق البحث." : "لا توجد أحاديث تطابق البحث."}</Empty>}
+    {sharing && <ShareContentDialog content={sharing} onClose={() => setSharing(null)} />}
   </div>;
 }

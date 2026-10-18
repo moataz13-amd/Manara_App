@@ -16,6 +16,8 @@ import { type Surah } from "./data";
 import { usePrefs } from "./store";
 import { Logo } from "./ui";
 import { pageGroups, splitOpening } from "./mushaf";
+import ShareVerses from "./share-verses";
+import { Share2 } from "lucide-react";
 
 export default function Reader({
   surahs,
@@ -40,6 +42,7 @@ export default function Reader({
   const basmala = surahs[0].ayahs[0].text.replace(/^\uFEFF/, "");
   const [selected, setSelected] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState<{ surah: Surah; initial: number } | null>(null);
   const [navigationVisible, setNavigationVisible] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -132,6 +135,7 @@ export default function Reader({
   }, []);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
       if (
         e.altKey ||
         e.ctrlKey ||
@@ -410,6 +414,7 @@ export default function Reader({
         {current ? (
           <>
             <span>الآية {current.ayah.numberInSurah}</span>
+            <button aria-label="مشاركة الآية أو مجموعة آيات" onClick={() => setSharing({ surah: current.surah, initial: current.ayah.numberInSurah })}><Share2 size={18} /></button>
             <button
               aria-label="علامة مرجعية للآية المحددة"
               aria-pressed={prefs.bookmarks.includes(selected!)}
@@ -435,7 +440,7 @@ export default function Reader({
             </button>
           </>
         ) : (
-          <span>اضغط على رقم الآية للحفظ أو النسخ</span>
+          <span>اضغط على رقم الآية للحفظ أو المشاركة</span>
         )}
       </div>
       <footer className="mushaf-pagination mushaf-page-indicator">
@@ -443,6 +448,7 @@ export default function Reader({
           {page.toLocaleString("ar-EG")}
         </span>
       </footer>
+      {sharing && <ShareVerses {...sharing} onClose={() => setSharing(null)} />}
     </div>
   );
 }
