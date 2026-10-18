@@ -219,7 +219,6 @@ export function AudioPlayer() {
           <div className="recitation-artwork patterned">
             <span className="recitation-artwork-label">القرآن الكريم</span>
             <h2><SurahName number={track.surah} name={track.title} /></h2>
-            <p>{track.title}</p>
             <span className="recitation-artwork-ornament" aria-hidden="true">۞</span>
           </div>
           <div className="recitation-description"><h3>{track.reciter}</h3><p role={error ? "status" : undefined}>{error || "تلاوة تملأ قلبك سكينة"}</p></div>
