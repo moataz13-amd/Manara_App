@@ -116,9 +116,6 @@ function App() {
               تملأ يومك بالسكينة
             </p>
           </div>
-          <NavLink className="settings-link" to="/settings">
-            <SettingsIcon size={20} /> الإعدادات
-          </NavLink>
           <NavLink className="settings-link" to="/install">تثبيت منارة</NavLink>
           <small>منارة · نورٌ يرافقك</small>
         </div>
