@@ -196,6 +196,7 @@ export function Tasbih() {
         >
           <svg className="tasbih-beads" viewBox="0 0 280 360" fill="none" aria-hidden="true">
             <ellipse cx="140" cy="133" rx="112" ry="112" className="tasbih-thread" />
+            <g className="tasbih-bead-ring" style={{ transform: `rotate(${progress.total * (360 / 33)}deg)`, transition: progress.total === 0 ? "none" : undefined }}>
             {Array.from({ length: 33 }, (_, index) => {
               const angle = (100 + index * 10) * Math.PI / 180;
               const x = 140 + 112 * Math.cos(angle);
@@ -207,6 +208,7 @@ export function Tasbih() {
                 <ellipse cx={x - 2.5} cy={y - 3} rx="2.8" ry="1.7" className="tasbih-bead-shine" />
               </g>;
             })}
+            </g>
             <path d="M121 243 Q140 259 159 243 M140 251 V264" className="tasbih-thread" />
             <path d="M136 261 Q130 269 134 284 L137 292 H143 L146 284 Q150 269 144 261 Z" className="tasbih-imam" />
             <path d="M140 292 V304 M136 302 Q122 321 123 343 M138 303 Q130 324 130 347 M140 303 V350 M142 303 Q150 324 150 347 M144 302 Q158 321 157 343" className="tasbih-tassel" />

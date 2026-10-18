@@ -45,12 +45,12 @@ const Prayers = lazy(() =>
   loadRoute(() => import("./settings").then((m) => ({ default: m.Prayers }))),
 );
 const links = [
-  { to: "/", label: "الرئيسية", icon: House },
-  { to: "/quran", label: "القرآن الكريم", icon: BookOpen },
+  { to: "/", label: "الرئيسية", icon: House, asset: "HomeIcon.svg" },
+  { to: "/quran", label: "القرآن الكريم", icon: BookOpen, asset: "QuranIcon.svg" },
   { to: "/reciters", label: "القرّاء والتلاوات", icon: AudioLines },
   { to: "/hadith", label: "الأحاديث النبوية", icon: BookOpen },
   { to: "/adhkar", label: "الأذكار والدعاء", icon: HandHeart },
-  { to: "/tasbih", label: "المسبحة", icon: CircleDot },
+  { to: "/tasbih", label: "المسبحة", icon: CircleDot, asset: "SebhaIcon.svg" },
   { to: "/prayers", label: "مواقيت الصلاة", icon: Sun },
   { to: "/settings", label: "الإعدادات العامة", icon: SettingsIcon },
 ];
@@ -100,9 +100,9 @@ function App() {
         </div>
         <span className="nav-caption">رحلتك اليومية</span>
         <nav>
-          {links.map(({ to, label, icon: Icon }) => (
+          {links.map(({ to, label, icon: Icon, asset }) => (
             <NavLink end={to === "/"} to={to} key={to} aria-label={label}>
-              <Icon size={22} strokeWidth={1.5} />
+              {asset ? <i className="nav-asset-icon sidebar-asset-icon" aria-hidden="true" style={{ maskImage: `url(/images/${asset})`, WebkitMaskImage: `url(/images/${asset})` }} /> : <Icon size={22} strokeWidth={1.5} />}
               <span>{label}</span>
             </NavLink>
           ))}

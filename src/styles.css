@@ -2942,6 +2942,7 @@ body.reading-mushaf {
   .horizontal-reciter-strip .reciter-card { flex-basis: 44%; min-width: 145px; }
 }
 
+.sidebar .sidebar-asset-icon { width: 22px; height: 22px; flex-shrink: 0; }
 .nav-asset-icon {
   display: block;
   width: 25px;
@@ -3531,6 +3532,7 @@ body.reading-mushaf {
 .tasbih-page .bead-counter { width: clamp(240px, 68vw, 300px); max-width: 100%; aspect-ratio: 280 / 360; margin: 14px 0 4px; padding: 0; background: transparent; box-shadow: none; border-radius: 24px; }
 .tasbih-page .bead-counter::before { display: none; }
 .tasbih-beads { width: 100%; height: 100%; overflow: visible; }
+.tasbih-bead-ring { transform-box: view-box; transform-origin: 140px 133px; transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1); }
 .tasbih-thread { stroke: var(--primary); stroke-width: 2; opacity: 0.45; }
 .tasbih-bead-shadow { fill: var(--primary); opacity: 0.12; }
 .tasbih-bead-body { fill: var(--mint); stroke: var(--primary); stroke-opacity: 0.18; stroke-width: 0.75; transition: fill 180ms ease; }
@@ -3541,7 +3543,7 @@ body.reading-mushaf {
 .tasbih-tassel-wrap { stroke: var(--gold); stroke-width: 2.5; stroke-linecap: round; }
 .tasbih-bead-readout { position: absolute; top: 14%; left: 18%; right: 18%; height: 46%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
 .tasbih-bead-number { font-size: clamp(58px, 14vw, 76px); line-height: 1.15; font-weight: 500; font-variant-numeric: tabular-nums; }
-@media (prefers-reduced-motion: reduce) { .tasbih-bead-body { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .tasbih-bead-body, .tasbih-bead-ring { transition: none; } }
 .tasbih-page .tasbih-status { font-size: 13px; margin: 8px 0 20px; }
 .tasbih-summary { display: flex; justify-content: space-around; gap: 16px; width: 100%; padding: 16px; background: var(--mint-soft); border-radius: 16px; font-size: 13px; }
 .tasbih-summary b { font-size: 18px; margin-inline: 4px; font-weight: 600; }
