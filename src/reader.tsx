@@ -18,6 +18,7 @@ import { Logo } from "./ui";
 import { pageGroups, splitOpening } from "./mushaf";
 import ShareVerses from "./share-verses";
 import { Share2 } from "lucide-react";
+import { VerseDialog, type VerseView } from "./verse-dialog";
 
 export default function Reader({
   surahs,
@@ -42,6 +43,7 @@ export default function Reader({
   const basmala = surahs[0].ayahs[0].text.replace(/^\uFEFF/, "");
   const [selected, setSelected] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [verseView, setVerseView] = useState<VerseView | null>(null);
   const [sharing, setSharing] = useState<{ surah: Surah; initial: number } | null>(null);
   const [navigationVisible, setNavigationVisible] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
@@ -134,6 +136,7 @@ export default function Reader({
   };
   useEffect(() => {
     setSelected(null);
+    setVerseView(null);
     setCopied(false);
   }, [page, location.hash]);
   useEffect(() => {
@@ -213,6 +216,7 @@ export default function Reader({
       aria-label={`${s.name}، الآية ${a.numberInSurah}`}
       aria-pressed={selected === `${s.number}:${a.numberInSurah}`}
       onClick={() => {
+        setVerseView("actions");
         setSelected(`${s.number}:${a.numberInSurah}`);
         setCopied(false);
         prefs.set({ last: { surah: s.number, ayah: a.numberInSurah } });
@@ -296,7 +300,7 @@ export default function Reader({
               setSelected(`${surahNumber}:${ayahNumber}`);
               setCopied(false);
               prefs.set({ last: { surah: surahNumber, ayah: ayahNumber } });
-              setSharing({ surah: verseSurah, initial: ayahNumber });
+              setVerseView("actions");
             }, 550);
           }
         }}
@@ -410,6 +414,7 @@ export default function Reader({
                         event.stopPropagation();
                         if (Date.now() < suppressClickUntil.current || (event.target as HTMLElement).closest("button")) return;
                         setSelected(`${s.number}:${a.numberInSurah}`);
+                        setVerseView("actions");
                         setCopied(false);
                         prefs.set({ last: { surah: s.number, ayah: a.numberInSurah } });
                       }}
@@ -474,7 +479,7 @@ export default function Reader({
             </button>
           </>
         ) : (
-          <span>اضغط على الآية لتحديدها، أو اضغط مطوّلًا للمشاركة</span>
+          <span>اضغط على الآية للمشاركة أو التفسير أو القراءة الصوتية</span>
         )}
       </div>
       <footer className="mushaf-pagination mushaf-page-indicator">
@@ -483,6 +488,7 @@ export default function Reader({
         </span>
       </footer>
       {sharing && <ShareVerses {...sharing} onClose={() => setSharing(null)} />}
+      {current && verseView && <VerseDialog surahs={surahs} initialSurah={current.surah.number} initialAyah={current.ayah.numberInSurah} initialView={verseView} onClose={() => setVerseView(null)} onShare={(s, a) => { setVerseView(null); setSharing({ surah: s, initial: a }); }} />}
     </div>
   );
 }

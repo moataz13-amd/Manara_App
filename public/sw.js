@@ -1,4 +1,4 @@
-const CACHE = "manara-v5-launch-location";
+const CACHE = "manara-v6-tafsir";
 self.addEventListener("install", () => { self.skipWaiting(); });
 self.addEventListener("install", (event) =>
   event.waitUntil(
@@ -9,6 +9,7 @@ self.addEventListener("install", (event) =>
           "/",
           "/data/quran.json",
           "/data/hafs-display.json",
+          "/data/tafsir-muyassar.json",
           "/manifest.webmanifest",
           "/images/splash-screen-1.svg",
           "/images/splash-screen-2.svg",

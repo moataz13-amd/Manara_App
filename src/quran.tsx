@@ -6,6 +6,9 @@ import { useQuran, normalize } from "./data";
 import { usePrefs } from "./store";
 import { Heading, Status, Empty } from "./ui";
 import Reader from "./reader";
+import { VerseDialog } from "./verse-dialog";
+import ShareVerses from "./share-verses";
+import type { Surah } from "./data";
 export default function Quran() {
   const { id } = useParams();
   const [params] = useSearchParams();
@@ -14,6 +17,8 @@ export default function Quran() {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("surahs");
   const [juz, setJuz] = useState(1);
+  const [tafsirOpen, setTafsirOpen] = useState(false);
+  const [sharing, setSharing] = useState<{ surah: Surah; initial: number } | null>(null);
   const surah = query.data?.find((s) => s.number === Number(id));
   if (query.isPending) return <Status />;
   if (query.isError) return <Status error retry={() => query.refetch()} />;
@@ -41,6 +46,8 @@ export default function Quran() {
       : [];
   return (
     <div className="quran-index-page library-page">
+      {tafsirOpen && <VerseDialog surahs={query.data!} initialSurah={1} initialAyah={1} initialView="tafsir" onClose={() => setTafsirOpen(false)} onShare={(s, a) => { setTafsirOpen(false); setSharing({ surah: s, initial: a }); }} />}
+      {sharing && <ShareVerses {...sharing} onClose={() => setSharing(null)} />}
       <Heading
         title="القرآن الكريم"
         subtitle="افتح قلبك لكلام الله، واجعل لك كل يوم وردًا."
@@ -59,6 +66,7 @@ export default function Quran() {
         </Link>
       </div>
       <div className="filter-bar">
+        <button className="secondary" onClick={() => setTafsirOpen(true)}>تفسير القرآن</button>
         <div className="tabs">
           {[
             ["surahs", "السور"],
