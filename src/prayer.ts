@@ -1,5 +1,6 @@
 import { CalculationMethod, Coordinates, Madhab, PrayerTimes } from "adhan";
-import { useEffect, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
+import { prayerClockSnapshot, subscribePrayerClock } from "./prayer-clock";
 import { usePrefs, type Place } from "./store";
 export const prayerNames: Record<string, string> = {
   fajr: "الفجر",
@@ -56,15 +57,17 @@ export function nextPrayer(
 }
 export function usePrayer() {
   const { place, method, hanafi, hour12 } = usePrefs();
-  const [now, setNow] = useState(new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const rows = place ? schedule(place, method, hanafi, now) : [];
-  const next = place
-    ? nextPrayer(rows, schedule(place, method, hanafi, now, 1), now)
-    : undefined;
+  const timestamp = useSyncExternalStore(subscribePrayerClock, prayerClockSnapshot);
+  const now = new Date(timestamp);
+  const day = place ? +localDate(now, place.timezone) : 0;
+  // Recalculate at local midnight or when location/calculation preferences change.
+  // Countdown ticks only compare times; they do not repeat astronomical calculations.
+  const { rows, tomorrow } = useMemo(() => {
+    if (!place) return { rows: [], tomorrow: [] };
+    const current = new Date(prayerClockSnapshot());
+    return { rows: schedule(place, method, hanafi, current), tomorrow: schedule(place, method, hanafi, current, 1) };
+  }, [day, place?.lat, place?.lon, place?.timezone, method, hanafi]);
+  const next = nextPrayer(rows, tomorrow, now);
   const seconds = next
     ? Math.max(0, Math.floor((+next.time - +now) / 1000))
     : 0;
@@ -72,6 +75,7 @@ export function usePrayer() {
     rows,
     next,
     now,
+    dateLabel: new Intl.DateTimeFormat("ar-EG", { timeZone: place?.timezone || "Africa/Cairo", weekday: "long", day: "numeric", month: "long" }).format(now),
     countdown: [
       Math.floor(seconds / 3600),
       Math.floor((seconds % 3600) / 60),

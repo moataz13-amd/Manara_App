@@ -291,6 +291,7 @@ export function Prayers() {
         </div>
         <div className="settings-card prayer-schedule">
           <h2>صلوات اليوم</h2>
+          <p>{prayer.dateLabel} · تتحدث تلقائيًا حسب المدينة المختارة</p>
           {prayer.rows.length ? (
             prayer.rows.map((p, i) => {
               const Icon = prayerIcons[i];
