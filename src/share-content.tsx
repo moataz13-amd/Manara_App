@@ -12,7 +12,7 @@ export async function makeShareImages(content: ShareContent): Promise<File[]> {
   await logo.decode();
   let frame: HTMLImageElement | undefined;
   if (mushaf) {
-    await Promise.all([document.fonts.load('36px "Manara Uthmanic Hafs"'), document.fonts.load('70px "Manara Surah"', String(content.surahNumber).padStart(3, "0"))]);
+    await Promise.all([document.fonts.load('44px "Manara Uthmanic Hafs"'), document.fonts.load('70px "Manara Surah"', String(content.surahNumber).padStart(3, "0"))]);
     frame = new Image(); frame.src = "/images/surah-frame.svg";
     await frame.decode();
   }
@@ -20,7 +20,8 @@ export async function makeShareImages(content: ShareContent): Promise<File[]> {
   canvas.width = 1080;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas");
-  const font = mushaf ? '36px "Manara Uthmanic Hafs"' : '36px "Amiri", serif';
+  const font = mushaf ? '44px "Manara Uthmanic Hafs"' : '36px "Amiri", serif';
+  const lineHeight = mushaf ? 82 : 68;
   const isMarker = (word: string) => mushaf && /^﴿[٠-٩]+﴾$/.test(word);
   const measure = (word: string) => { ctx.font = font; return isMarker(word) ? 48 : ctx.measureText(word).width; };
   const measureLine = (line: string) => line.split(" ").reduce((width, word, index) => width + measure(word) + (index ? 9 : 0), 0);
@@ -36,11 +37,11 @@ export async function makeShareImages(content: ShareContent): Promise<File[]> {
     lines.push(line);
   }
   const files: File[] = [];
-  const perPage = 19;
+  const perPage = mushaf ? 16 : 19;
   for (let offset = 0; offset < lines.length; offset += perPage) {
     const chunk = lines.slice(offset, offset + perPage);
-    const textTop = mushaf ? 330 : 235;
-    canvas.height = Math.max(660, textTop + (mushaf ? 40 : 135) + chunk.length * 68);
+    const textTop = mushaf ? 350 : 235;
+    canvas.height = Math.max(660, textTop + (mushaf ? 40 : 135) + chunk.length * lineHeight);
     ctx.fillStyle = "#f6faf7"; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#bddbd2"; ctx.lineWidth = 2; ctx.strokeRect(36, 36, 1008, canvas.height - 72);
     ctx.direction = "rtl"; ctx.textAlign = "center"; ctx.fillStyle = "#104f40";
@@ -64,7 +65,7 @@ export async function makeShareImages(content: ShareContent): Promise<File[]> {
         ctx.textAlign = "right";
         let x = justify ? 980 : 540 + (widths.reduce((sum, width) => sum + width, 0) + gap * (words.length - 1)) / 2;
         words.forEach((word, i) => {
-          const y = textTop + index * 68;
+          const y = textTop + index * lineHeight;
           if (isMarker(word)) {
             ctx.save();
             const cx = x - 24, cy = y - 12;
@@ -85,7 +86,7 @@ export async function makeShareImages(content: ShareContent): Promise<File[]> {
           x -= widths[i] + gap;
         });
         ctx.textAlign = "center";
-      } else ctx.fillText(line, 540, textTop + index * 68);
+      } else ctx.fillText(line, 540, textTop + index * lineHeight);
     });
     if (!mushaf) {
       ctx.font = '24px "Tajawal", sans-serif';
