@@ -1,4 +1,4 @@
-import { loadRoute } from "./route-loader";
+import { loadRoute, preloadable } from "./route-loader";
 import "./install-state";
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -31,18 +31,33 @@ import { AudioPlayer, useAudio } from "./audio";
 import "./styles.css";
 import Splash from "./splash";
 import { PrayerReminder } from "./notifications";
-const Home = lazy(() => loadRoute(() => import("./home")));
+const homeModule = preloadable(() => import("./home"));
+const quranModule = preloadable(() => import("./quran"));
+const adhkarModule = preloadable(() => import("./adhkar"));
+const settingsModule = preloadable(() => import("./settings"));
+const recitersModule = preloadable(() => import("./reciters"));
+const hadithModule = preloadable(() => import("./hadith"));
+const navigationModules: Record<string, () => Promise<unknown>> = {
+  "/": homeModule, "/quran": quranModule, "/tasbih": adhkarModule,
+  "/adhkar": adhkarModule, "/prayers": settingsModule,
+  "/settings": settingsModule, "/reciters": recitersModule, "/hadith": hadithModule,
+};
+function warmNavigation(path: string) {
+  // Speculation must never reload the page or surface an unhandled rejection.
+  void navigationModules[path]?.().catch(() => {});
+}
+const Home = lazy(() => loadRoute(homeModule));
 const Install = lazy(() => loadRoute(() => import("./install")));
-const Hadith = lazy(() => loadRoute(() => import("./hadith")));
-const Quran = lazy(() => loadRoute(() => import("./quran")));
-const Adhkar = lazy(() => loadRoute(() => import("./adhkar")));
+const Hadith = lazy(() => loadRoute(hadithModule));
+const Quran = lazy(() => loadRoute(quranModule));
+const Adhkar = lazy(() => loadRoute(adhkarModule));
 const Tasbih = lazy(() =>
-  loadRoute(() => import("./adhkar").then((m) => ({ default: m.Tasbih }))),
+  loadRoute(() => adhkarModule().then((m) => ({ default: m.Tasbih }))),
 );
-const Reciters = lazy(() => loadRoute(() => import("./reciters")));
-const Settings = lazy(() => loadRoute(() => import("./settings")));
+const Reciters = lazy(() => loadRoute(recitersModule));
+const Settings = lazy(() => loadRoute(settingsModule));
 const Prayers = lazy(() =>
-  loadRoute(() => import("./settings").then((m) => ({ default: m.Prayers }))),
+  loadRoute(() => settingsModule().then((m) => ({ default: m.Prayers }))),
 );
 const links = [
   { to: "/", label: "الرئيسية", icon: House, asset: "HomeIcon.svg" },
@@ -79,6 +94,13 @@ function App() {
   const [menu, setMenu] = useState(false);
   const track = useAudio((s) => s.track);
   useEffect(() => {
+    // Warm the four bottom-nav destinations while the welcome screen is visible.
+    const timer = window.setTimeout(() => {
+      for (const path of ["/", "/quran", "/prayers", "/tasbih"]) warmNavigation(path);
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, []);
+  useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
   useEffect(() => {
@@ -101,7 +123,7 @@ function App() {
         <span className="nav-caption">رحلتك اليومية</span>
         <nav>
           {links.map(({ to, label, icon: Icon, asset }) => (
-            <NavLink end={to === "/"} to={to} key={to} aria-label={label}>
+            <NavLink end={to === "/"} to={to} key={to} aria-label={label} onPointerEnter={() => warmNavigation(to)} onPointerDown={() => warmNavigation(to)} onFocus={() => warmNavigation(to)}>
               {asset ? <i className="nav-asset-icon sidebar-asset-icon" aria-hidden="true" style={{ maskImage: `url(/images/${asset})`, WebkitMaskImage: `url(/images/${asset})` }} /> : <Icon size={22} strokeWidth={1.5} />}
               <span>{label}</span>
             </NavLink>
@@ -149,7 +171,7 @@ function App() {
           </nav>
         </header>
         <main id="main">
-          <Suspense fallback={<Status />}>
+          <Suspense key={location.pathname} fallback={<Status />}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/install" element={<Install />} />
@@ -183,7 +205,7 @@ function App() {
           { to: "/prayers", label: "أوقات الصلاة", asset: "AwqatIcon.svg" },
           { to: "/tasbih", label: "السبحة", asset: "SebhaIcon.svg" },
         ].map(({ to, label, asset }) => (
-          <NavLink end={to === "/"} to={to} key={to} aria-label={label}>
+          <NavLink end={to === "/"} to={to} key={to} aria-label={label} onPointerEnter={() => warmNavigation(to)} onPointerDown={() => warmNavigation(to)} onFocus={() => warmNavigation(to)}>
             <i className="nav-asset-icon" aria-hidden="true" style={{ maskImage: `url(/images/${asset})`, WebkitMaskImage: `url(/images/${asset})` }} />
             <span>{label}</span>
           </NavLink>

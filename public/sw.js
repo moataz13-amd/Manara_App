@@ -1,4 +1,4 @@
-const CACHE = "manara-v6-tafsir";
+const CACHE = "manara-v7-fast-navigation";
 self.addEventListener("install", () => { self.skipWaiting(); });
 self.addEventListener("install", (event) =>
   event.waitUntil(
@@ -48,6 +48,22 @@ self.addEventListener("activate", (event) =>
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== location.origin) return;
+  if (url.pathname.startsWith("/data/") || url.pathname.startsWith("/assets/")) {
+    const cachePromise = caches.open(CACHE);
+    const cachedPromise = cachePromise.then((cache) => cache.match(event.request));
+    const update = async () => {
+      const response = await fetch(event.request);
+      if (response.ok) await (await cachePromise).put(event.request, response.clone());
+      return response;
+    };
+    // Hashed build assets are immutable. Data is served immediately and refreshed.
+    const refresh = cachedPromise.then((cached) =>
+      cached && url.pathname.startsWith("/assets/") ? cached : update(),
+    );
+    event.waitUntil(refresh.catch(() => {}));
+    event.respondWith(cachedPromise.then((cached) => cached || refresh));
+    return;
+  }
   if (url.pathname.startsWith("/fonts/")) {
     event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
     return;

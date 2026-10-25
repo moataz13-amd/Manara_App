@@ -3865,3 +3865,6 @@ body.reading-mushaf {
 @media (prefers-reduced-motion: reduce) {
   .intro-copy, .intro-progress i { transition: none; transform: none; }
 }
+
+.mobile-nav > a, .mobile-nav > button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.mobile-nav > a:active, .mobile-nav > button:active { background-color: #cce7df; color: #104f40; }

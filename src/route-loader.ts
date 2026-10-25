@@ -1,3 +1,12 @@
+// Share speculative and navigation requests; failed preloads remain retryable.
+export function preloadable<T>(loader: () => Promise<T>) {
+  let pending: Promise<T> | undefined;
+  return () => pending ??= loader().catch((error) => {
+    pending = undefined;
+    throw error;
+  });
+}
+
 export function isStaleChunkError(error: unknown) {
   return error instanceof Error && /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk|ChunkLoadError|error loading dynamically imported module/i.test(error.message);
 }
