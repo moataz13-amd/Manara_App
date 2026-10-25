@@ -3000,15 +3000,6 @@ body.reading-mushaf {
 }
 
 @media (max-width: 700px) {
-  .reading-mushaf .mobile-navigation-layer > .mobile-nav {
-    bottom: calc(96px + env(safe-area-inset-bottom));
-  }
-  .reading-mushaf.mushaf-navigation-visible .workspace {
-    padding-bottom: calc(176px + env(safe-area-inset-bottom));
-  }
-}
-
-@media (max-width: 700px) {
   body:not(.reading-mushaf) > .mobile-navigation-layer {
     display: contents;
   }
@@ -3773,7 +3764,6 @@ body.reading-mushaf {
 @media (max-width: 700px) {
   .recitation-mini { bottom: calc(96px + env(safe-area-inset-bottom)); left: 18px; right: 18px; }
   .reading-mushaf:not(.mushaf-navigation-visible) .recitation-mini { bottom: calc(54px + env(safe-area-inset-bottom)); }
-  .reading-mushaf.mushaf-navigation-visible .recitation-mini { bottom: calc(176px + env(safe-area-inset-bottom)); }
 }
 @media (max-height: 680px) {
   .recitation-topbar { margin-bottom: 12px; }
