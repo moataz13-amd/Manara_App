@@ -3795,3 +3795,35 @@ body.reading-mushaf {
 .verse-selectors select { width: 100%; padding: 10px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; }
 .verse-explanation > p:not(.verse-source) { font-size: 18px; line-height: 2; white-space: pre-line; }
 .verse-dialog audio { width: 100%; margin-block: 12px; }
+
+@keyframes mobile-sheet-enter {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@media (max-width: 700px) {
+  .share-dialog {
+    position: fixed;
+    inset: auto 0 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 90dvh;
+    box-sizing: border-box;
+    padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+    border-radius: 24px 24px 0 0;
+    border-bottom: 0;
+  }
+  .share-dialog[open] { animation: mobile-sheet-enter 240ms cubic-bezier(.22, .7, .25, 1); }
+  .share-dialog::before {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 0 auto 12px;
+    border-radius: 999px;
+    background: var(--border);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .share-dialog[open] { animation: none; }
+}
