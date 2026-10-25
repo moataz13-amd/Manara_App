@@ -28,6 +28,7 @@ interface Preferences {
   tasbih: number;
   target: number;
   reciter: number;
+  verseReciter: string;
   set: (
     patch: Partial<Omit<Preferences, "set" | "toggleBookmark" | "increment">>,
   ) => void;
@@ -62,6 +63,7 @@ export const usePrefs = create<Preferences>()(
       tasbih: 0,
       target: 33,
       reciter: 112,
+      verseReciter: "ar.alafasy",
       set: (patch) => set(patch),
       toggleBookmark: (id) =>
         set((s) => ({
