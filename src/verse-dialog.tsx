@@ -54,7 +54,7 @@ export function VerseDialog({ surahs, initialSurah, initialAyah, initialView, on
     </div>}
     <p className="verse-reference">{surah.name} · الآية {ayahNumber.toLocaleString("ar-EG")}</p>
     <p className="verse-dialog-text">{ayah.text}</p>
-    <div className="verse-actions">
+    <div className="verse-dialog-actions">
       <button onClick={() => onShare(surah, ayahNumber)}><Share2 size={20} />مشاركة</button>
       <button aria-pressed={view === "tafsir"} onClick={() => setView("tafsir")}><BookOpen size={20} />تفسير</button>
       <button aria-pressed={view === "audio"} onClick={() => setView("audio")}><Play size={20} />قراءة صوتية</button>
@@ -62,7 +62,7 @@ export function VerseDialog({ surahs, initialSurah, initialAyah, initialView, on
     {view === "tafsir" && <section className="verse-explanation" aria-label="تفسير الآية">
       <p className="verse-source">التفسير الميسّر · مجمع الملك فهد · <a href="https://alquran.cloud/api" target="_blank" rel="noreferrer">مصدر البيانات</a></p>
       {tafsir.isPending ? <p role="status">جارٍ تحميل التفسير…</p> : tafsir.isError ? <p role="alert">تعذر تحميل التفسير. <button onClick={() => void tafsir.refetch()}>إعادة المحاولة</button></p> : <p>{explanation || "تفسير هذه الآية غير متاح."}</p>}
-      <div className="verse-actions"><button disabled={ayahNumber === 1} onClick={() => setAyah(ayahNumber - 1)}>الآية السابقة</button><button disabled={ayahNumber === surah.ayahs.length} onClick={() => setAyah(ayahNumber + 1)}>الآية التالية</button></div>
+      <div className="verse-dialog-actions"><button disabled={ayahNumber === 1} onClick={() => setAyah(ayahNumber - 1)}>الآية السابقة</button><button disabled={ayahNumber === surah.ayahs.length} onClick={() => setAyah(ayahNumber + 1)}>الآية التالية</button></div>
     </section>}
     {view === "audio" && <section aria-label="تلاوة الآية">
       <p>بصوت مشاري العفاسي · تحتاج التلاوة إلى اتصال بالإنترنت</p>
