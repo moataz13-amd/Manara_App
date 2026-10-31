@@ -916,13 +916,14 @@ main {
   font-family: var(--quran);
   border: 0;
   border-radius: 0;
-  font-size: 0.72em;
+  font-size: 1em;
   width: auto;
-  min-width: 1em;
-  height: 1.6em;
+  min-width: 0;
+  height: auto;
   line-height: 1;
   padding: 0;
-  margin: 0 4px;
+  margin: 0;
+  gap: 0;
   vertical-align: middle;
 }
 .verse-number.current {
@@ -2244,8 +2245,10 @@ body.reading-mushaf {
   margin: 0.08em 0 0.2em;
 }
 .mushaf-verse .verse-number {
-  font-size: 0.72em;
-  margin: 0 0.16em;
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  gap: 0;
 }
 .mushaf-verse-tools {
   flex-shrink: 0;
@@ -2513,10 +2516,12 @@ body.reading-mushaf {
 .mushaf-page-sheet {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: stretch;
+  min-height: 100%;
 }
 .mushaf-page-text {
   width: 100%;
+  flex: 1 0 auto;
   line-height: 1.85;
   padding: 0 2px 0.3em;
   text-align: justify;
@@ -2530,6 +2535,8 @@ body.reading-mushaf {
   justify-content: center;
 }
 .opening-page .mushaf-page-text {
+  flex: 1 0 auto;
+  min-height: 0;
   line-height: 1.95;
   text-align: center;
   text-align-last: center;
@@ -2547,13 +2554,17 @@ body.reading-mushaf {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.3em;
-  height: 1.5em;
-  font-size: 0.65em;
-  margin: 0 0.15em;
-  vertical-align: 0.05em;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  vertical-align: middle;
   color: var(--primary);
   background: transparent;
+  border: 0;
 }
 .mushaf-verse .verse-number.current,
 .mushaf-verse .verse-number[aria-pressed="true"] {
@@ -2564,6 +2575,8 @@ body.reading-mushaf {
   font-size: 34px;
   line-height: 1.5;
   font-weight: 400;
+  text-align: right;
+  direction: rtl;
 }
 
 /* Preserve the font's positioning of Quranic combining marks. */
@@ -3475,7 +3488,7 @@ body.reading-mushaf {
 .reciters-page .reciter-list-card .text-link { display: inline-flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 10px; font-size: 12px; }
 .reciters-page .reciter-list-card > .text-link { white-space: nowrap; }
 .reciters-page .reciter-list-card > small { overflow-wrap: anywhere; }
-.reciters-page .surah-row h3 { flex: 1; text-align: start; }
+.reciters-page .surah-row h3 { flex: 1; text-align: right; direction: rtl; }
 .prayers-page > .prayer-card { border-radius: 24px; margin-top: 24px; }
 .prayers-page .prayers-layout { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .prayers-page .prayer-schedule { grid-column: 1; grid-row: 1; }
@@ -3665,6 +3678,8 @@ body.reading-mushaf {
   line-height: 1.7;
   min-width: 0;
   margin: 0;
+  text-align: right;
+  direction: rtl;
 }
 .surah-row > div { min-width: 0; }
 .surah-row .index-surah-name .surah-name-fallback {

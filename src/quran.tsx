@@ -104,7 +104,7 @@ export default function Quran() {
             >
               <span className="number-medallion">{s.number}</span>
               <div>
-                <h3 className="index-surah-name mushaf-surah-name" dir="ltr" aria-label={s.name}><SurahName number={s.number} name={s.name} /></h3>
+                <h3 className="index-surah-name mushaf-surah-name" dir="rtl" aria-label={s.name}><SurahName number={s.number} name={s.name} /></h3>
                 <small>
                   {s.revelationType === "Meccan" ? "مكية" : "مدنية"} ·{" "}
                   {s.ayahs.length} آية
@@ -149,7 +149,7 @@ export default function Quran() {
                 >
                   <span className="number-medallion">{s.number.toLocaleString("ar-EG")}</span>
                   <div>
-                    <h3 className="index-surah-name mushaf-surah-name" dir="ltr" aria-label={s.name}><SurahName number={s.number} name={s.name} /></h3>
+                    <h3 className="index-surah-name mushaf-surah-name" dir="rtl" aria-label={s.name}><SurahName number={s.number} name={s.name} /></h3>
                     <small>{s.revelationType === "Meccan" ? "مكية" : "مدنية"} · {s.ayahs.length.toLocaleString("ar-EG")} آية</small>
                   </div>
                 </Link>

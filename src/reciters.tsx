@@ -71,7 +71,7 @@ export default function Reciters() {
                   onClick={() => startRecitation(selected, s)}
                 >
                   <span className="number-medallion">{s.number}</span>
-                  <h3 className="mushaf-surah-name reciter-surah-name" aria-label={s.name} dir="ltr">
+                  <h3 className="mushaf-surah-name reciter-surah-name" aria-label={s.name} dir="rtl">
                     <SurahName number={s.number} name={s.name} />
                   </h3>
                   <Play size={18} />

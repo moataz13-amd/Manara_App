@@ -173,20 +173,110 @@ export default function Reader({
     const fit = () => {
       if (!active || !frame.current || !content.current) return;
       const el = content.current;
+      // Start each measurement from the Mushaf's base leading.  A prior page may
+      // have expanded its line spacing, and retaining that inline value makes the
+      // next page appear unchanged or forces an unnecessarily small font.
+      el.style.lineHeight = "";
+      const contentBounds = () => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const rects = Array.from(range.getClientRects()).filter(
+          (rect) => rect.width > 0 && rect.height > 0,
+        );
+        if (!rects.length) return { height: 0, width: 0, lineCount: 0 };
+        const top = Math.min(...rects.map((rect) => rect.top));
+        const bottom = Math.max(...rects.map((rect) => rect.bottom));
+        const left = Math.min(...rects.map((rect) => rect.left));
+        const right = Math.max(...rects.map((rect) => rect.right));
+        return {
+          height: bottom - top,
+          width: right - left,
+          lineCount: new Set(rects.map((rect) => Math.round(rect.top))).size,
+        };
+      };
+      const hasOrphanLastAyah = () => {
+        const verses = Array.from(el.querySelectorAll<HTMLElement>(".mushaf-verse"));
+        const lastVerse = verses.at(-1);
+        if (!lastVerse) return false;
+
+        const allRects = verses.flatMap((verse) =>
+          Array.from(verse.getClientRects()).filter(
+            (rect) => rect.width > 0 && rect.height > 0,
+          ),
+        );
+        if (!allRects.length) return false;
+        const lastLineTop = Math.max(...allRects.map((rect) => Math.round(rect.top)));
+        const lastLineRects = allRects.filter(
+          (rect) => Math.abs(Math.round(rect.top) - lastLineTop) <= 1,
+        );
+        const lastLineVerses = new Set(
+          verses
+            .filter((verse) =>
+              Array.from(verse.getClientRects()).some(
+                (rect) => Math.abs(Math.round(rect.top) - lastLineTop) <= 1,
+              ),
+            )
+            .map((verse) => verse.dataset.verseKey),
+        );
+
+        // Only correct a genuinely isolated short ayah. A final line that is
+        // full (or shared with another ayah) is a valid Mushaf line.
+        return (
+          lastLineVerses.size === 1 &&
+          lastLineRects.reduce((width, rect) => width + rect.width, 0) <
+            el.clientWidth * 0.68
+        );
+      };
       let low = 8,
-        high = Math.min(frame.current.clientWidth / 8, prefs.fontSize * 2);
-      // Fit the verified page to the available viewport; never clip its final ayahs.
-      for (let i = 0; i < 12; i++) {
+        high = Math.min(frame.current.clientWidth / 5, prefs.fontSize * 2);
+      const availableHeight = frame.current.clientHeight - 16;
+      // Measure rendered Quran lines, not the flex item which already fills the page.
+      for (let i = 0; i < 18; i++) {
         const mid = (low + high) / 2;
         el.style.fontSize = `${mid}px`;
+        const bounds = contentBounds();
         if (
-          el.scrollHeight <= frame.current.clientHeight &&
+          bounds.height + 12 <= availableHeight &&
           el.scrollWidth <= frame.current.clientWidth
         )
           low = mid;
         else high = mid;
       }
-      el.style.fontSize = `${Math.floor(low * 100) / 100}px`;
+      let currentSize = Math.floor(low * 100) / 100;
+      el.style.fontSize = `${currentSize}px`;
+      // Prevent a very short final ayah from becoming a lone final line. This
+      // is deliberately a small adjustment: it preserves the supplied Hafs
+      // glyphs and page content, only allowing the preceding line to absorb it.
+      if (page > 2 && hasOrphanLastAyah()) {
+        const smallest = currentSize * 0.88;
+        for (
+          let candidate = currentSize - 0.1;
+          candidate >= smallest;
+          candidate -= 0.1
+        ) {
+          el.style.fontSize = `${candidate}px`;
+          const bounds = contentBounds();
+          if (
+            !hasOrphanLastAyah() &&
+            bounds.height + 12 <= availableHeight &&
+            el.scrollWidth <= frame.current.clientWidth
+          ) {
+            currentSize = Math.floor(candidate * 100) / 100;
+            break;
+          }
+        }
+        el.style.fontSize = `${currentSize}px`;
+      }
+      const metrics = contentBounds();
+      if (page > 2 && metrics.lineCount > 1) {
+        const freeSpace = Math.max(0, availableHeight - metrics.height - 4);
+        const expandedLineHeight =
+          1.85 + freeSpace / ((metrics.lineCount - 1) * currentSize);
+        el.style.lineHeight = String(Math.min(2.2, expandedLineHeight));
+      }
+
+      // If the last ayah/word wrapped onto a line by itself, shrink the font size
+      // slightly so it pulls up into the previous line to form a complete line.
     };
     fit();
     const observer = new ResizeObserver(fit);
@@ -221,9 +311,7 @@ export default function Reader({
         setCopied(false);
         prefs.set({ last: { surah: s.number, ayah: a.numberInSurah } });
       }}
-    >
-      {a.numberInSurah.toLocaleString("ar-EG")}
-    </button>
+>{a.numberInSurah.toLocaleString("ar-EG")}</button>
   );
   return (
     <div className={`reader paged-reader ${page <= 2 ? "opening-page" : ""} ${navigationVisible ? "" : "mushaf-focus-mode"}`}>
@@ -427,18 +515,13 @@ export default function Reader({
                             className="basmala-artwork"
                             role="img"
                             aria-label={opening.basmala}
-                          />
-                          {s.number === 1 && number(a, s)}
+                          />{s.number === 1 && number(a, s)}
                         </span>
                       )}
                       {opening.text && (
                         <>
                           <span>{opening.text.slice(0, endingStart)}</span>
-                          <span className="mushaf-ayah-ending">
-                            {opening.text.slice(endingStart)}
-                            {number(a, s)}
-                          </span>
-                          {a !== ayahs[ayahs.length - 1] ? " " : null}
+                          <span className="mushaf-ayah-ending">{opening.text.slice(endingStart)}{number(a, s)}</span>{a !== ayahs[ayahs.length - 1] ? " " : null}
                         </>
                       )}
                     </span>
