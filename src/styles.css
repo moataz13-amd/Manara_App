@@ -683,6 +683,7 @@ main {
   line-height: 1.9;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1622,6 +1623,7 @@ summary {
   .top-actions .location-link span {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -2980,6 +2982,7 @@ body.reading-mushaf {
 .dhikr-carousel .dhikr-preview p {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
