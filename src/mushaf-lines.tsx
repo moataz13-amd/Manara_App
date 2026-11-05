@@ -51,9 +51,10 @@ export default function MushafLines({ page, surahs, selected, onSelect, onReady 
     if (!ready || !root.current) return;
     const el = root.current;
     const fit = () => {
+      if (el.clientWidth <= 0 || el.clientHeight <= 0) return;
       const rows = Array.from(el.querySelectorAll<HTMLElement>(".qpc-line-text"));
       rows.forEach((row) => { row.style.fontSize = "40px"; });
-      const widest = Math.max(...rows.map((row) => row.scrollWidth), 1);
+      const widest = Math.max(...rows.map((row) => row.getBoundingClientRect().width), 1);
       const size = Math.min(40 * el.clientWidth / widest, el.clientHeight / 15 / 1.5);
       rows.forEach((row) => { row.style.fontSize = `${size}px`; });
     };

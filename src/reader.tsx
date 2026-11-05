@@ -175,6 +175,10 @@ export default function Reader({
     const fit = () => {
       if (!active || !frame.current || !content.current) return;
       const el = content.current;
+      // The original-line renderer hides this fallback after loading. Measuring
+      // a hidden element returns zero and incorrectly selects the largest font.
+      if (originalLinesReady || !el.getClientRects().length ||
+          frame.current.clientWidth <= 0 || frame.current.clientHeight <= 0) return;
       // Start each measurement from the Mushaf's base leading.  A prior page may
       // have expanded its line spacing, and retaining that inline value makes the
       // next page appear unchanged or forces an unnecessarily small font.
@@ -303,7 +307,7 @@ export default function Reader({
       observer.disconnect();
       document.fonts.removeEventListener("loadingdone", fit);
     };
-  }, [page, prefs.fontSize, navigationVisible]);
+  }, [page, prefs.fontSize, navigationVisible, originalLinesReady]);
   useEffect(() => {
     document.body.classList.toggle("mushaf-navigation-visible", navigationVisible);
     return () => document.body.classList.remove("mushaf-navigation-visible");
