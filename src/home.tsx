@@ -147,7 +147,7 @@ export default function Home() {
   const dhikrCategories = [...new Set(adhkar.data?.map((row) => row[0]) || ["أذكار المساء", "أذكار الصباح", "أذكار النوم"])];
   if (quran.isPending || reciters.isPending || adhkar.isPending) return <PageSkeleton />;
   return (
-    <>
+    <div className="home-screen">
       <div className="home-intro">
         <div>
           <span className="eyebrow">
@@ -201,6 +201,7 @@ export default function Home() {
                 ? `صفحة ${surah.ayahs.find((ayah) => ayah.numberInSurah === last.ayah)?.page || surah.ayahs[0]?.page} · رقمها ${surah.number} · آياتها ${surah.ayahs.length} · ${surah.revelationType === "Meccan" ? "مكية" : "مدنية"}`
                 : "استكمل وردك اليومي"}
             </small>
+            <span className="continue-desktop-action">متابعة من الآية {last.ayah.toLocaleString("ar-EG")} <ArrowUpLeft size={17} /></span>
           </Link>
         </div>
       </div>
@@ -245,7 +246,11 @@ export default function Home() {
       <div className="home-bottom-grid">
         <Section title="الأكثر استماعًا" to="/quran">
           <CardCarousel className="selection-carousel" label="مختارات التلاوات">
-            {!topSurahs.length && <p className="muted">ابدأ الاستماع، وستظهر هنا أكثر ٥ سور تستمع إليها.</p>}
+            {!topSurahs.length && <div className="listening-empty">
+              <Headphones size={30} strokeWidth={1.3} />
+              <div><h3>تلاوة ترافق يومك</h3><p className="muted">ابدأ الاستماع، وستجد سورك المفضلة هنا.</p></div>
+              <Link to="/reciters">اختر قارئك <ArrowUpLeft size={17} /></Link>
+            </div>}
             {topSurahs.map((number, index) => {
               const preferred = reciters.data?.find((r) => r.name === listening[number]?.reciter) || reciters.data?.find((r) => r.id === usePrefs.getState().reciter) || featured[0];
               const playNeighbor = (delta: number) => {
@@ -295,6 +300,6 @@ export default function Home() {
         <BookOpen size={30} /><div><h2>من هدي النبي ﷺ</h2><p>تصفّح الأربعين النووية واحفظ أحاديثك المفضلة.</p></div><ChevronLeft size={20} />
       </Link>
       <InstallPrompt />
-    </>
+    </div>
   );
 }
