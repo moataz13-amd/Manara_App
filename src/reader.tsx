@@ -19,6 +19,7 @@ import { pageGroups, splitOpening } from "./mushaf";
 import ShareVerses from "./share-verses";
 import { Share2 } from "lucide-react";
 import { VerseDialog, type VerseView } from "./verse-dialog";
+import MushafLines from "./mushaf-lines";
 
 export default function Reader({
   surahs,
@@ -46,6 +47,7 @@ export default function Reader({
   const [verseView, setVerseView] = useState<VerseView | null>(null);
   const [sharing, setSharing] = useState<{ surah: Surah; initial: number } | null>(null);
   const [navigationVisible, setNavigationVisible] = useState(false);
+  const [originalLinesReady, setOriginalLinesReady] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
@@ -188,10 +190,18 @@ export default function Reader({
         const bottom = Math.max(...rects.map((rect) => rect.bottom));
         const left = Math.min(...rects.map((rect) => rect.left));
         const right = Math.max(...rects.map((rect) => rect.right));
+        // Glyphs and ayah buttons have slightly different vertical offsets;
+        // cluster them by baseline instead of counting each offset as a line.
+        const lineTops: number[] = [];
+        for (const rect of [...rects].sort((a, b) => a.top - b.top)) {
+          if (!lineTops.some((top) => Math.abs(top - rect.top) < 8)) {
+            lineTops.push(rect.top);
+          }
+        }
         return {
           height: bottom - top,
           width: right - left,
-          lineCount: new Set(rects.map((rect) => Math.round(rect.top))).size,
+          lineCount: lineTops.length,
         };
       };
       const hasOrphanLastAyah = () => {
@@ -275,8 +285,6 @@ export default function Reader({
         el.style.lineHeight = String(Math.min(2.2, expandedLineHeight));
       }
 
-      // If the last ayah/word wrapped onto a line by itself, shrink the font size
-      // slightly so it pulls up into the previous line to form a complete line.
     };
     fit();
     const observer = new ResizeObserver(fit);
@@ -456,7 +464,17 @@ export default function Reader({
           ref={sheet}
           className={`mushaf-page-sheet ${dragging ? "is-dragging" : ""}`}
         >
-          <div className="mushaf-page-text" ref={content} key={page}>
+          <MushafLines page={page} surahs={surahs} selected={selected}
+            onReady={setOriginalLinesReady}
+            onSelect={(key) => {
+              if (Date.now() < suppressClickUntil.current) return;
+              const [surah, ayah] = key.split(":").map(Number);
+              setSelected(key);
+              setVerseView("actions");
+              setCopied(false);
+              prefs.set({ last: { surah, ayah } });
+            }} />
+          <div className="mushaf-page-text" ref={content} key={page} style={originalLinesReady ? { display: "none" } : undefined}>
             {groups.map(({ surah: s, ayahs }) => (
               <section className="mushaf-surah" key={s.number}>
                 {ayahs[0].numberInSurah === 1 && (

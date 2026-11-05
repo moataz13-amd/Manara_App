@@ -2222,6 +2222,39 @@ body.reading-mushaf {
 .mushaf-ayah-ending {
   white-space: nowrap;
 }
+.qpc-page {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: repeat(15, minmax(0, 1fr));
+  padding: 8px 4px;
+  color: var(--primary);
+}
+.mushaf-page-sheet:has(.qpc-page) {
+  position: relative;
+  height: 100%;
+}
+.qpc-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+.qpc-line-text {
+  display: block;
+  flex: 0 0 auto;
+  white-space: pre;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  direction: rtl;
+  text-align: center;
+  letter-spacing: 0;
+  word-spacing: normal;
+}
+.qpc-line-text [data-verse-key] { cursor: pointer; }
+.qpc-surah-title { font: 24px var(--font-ayah); }
+.qpc-basmala { font: 22px var(--font-ayah); }
 .mushaf-surah-heading {
   display: flex;
   align-items: center;
