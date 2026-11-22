@@ -42,16 +42,19 @@ export function useQuran() {
   return useQuery({
     queryKey: ["quran"],
     queryFn: async () => {
-      const [source, display] = await Promise.all([
+      const [source, display, pages] = await Promise.all([
         json<{ data: { surahs: Surah[] } }>("/data/quran.json"),
         json<string[]>("/data/hafs-display.json"),
+        json<number[]>("/data/mushaf/ayah-pages.json"),
       ]);
       if (display.length !== 6236) throw new Error("تعذر تحميل نص المصحف");
+      if (pages.length !== 6236 || pages.some((page) => !Number.isInteger(page) || page < 1 || page > 604)) throw new Error("تعذر تحميل فهرس المصحف");
       return source.data.surahs.map((surah) => ({
         ...surah,
         ayahs: surah.ayahs.map((ayah) => ({
           ...ayah,
           displayText: display[ayah.number - 1],
+          page: pages[ayah.number - 1],
         })),
       }));
     },

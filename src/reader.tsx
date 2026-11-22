@@ -15,7 +15,7 @@ import {
 import { type Surah } from "./data";
 import { usePrefs } from "./store";
 import { Logo } from "./ui";
-import { pageGroups, splitOpening } from "./mushaf";
+import { pageGroups } from "./mushaf";
 import ShareVerses from "./share-verses";
 import { Share2 } from "lucide-react";
 import { VerseDialog, type VerseView } from "./verse-dialog";
@@ -41,15 +41,12 @@ export default function Reader({
         surah.ayahs[0].page;
   const groups = pageGroups(surahs, page);
   const first = groups[0];
-  const basmala = surahs[0].ayahs[0].text.replace(/^\uFEFF/, "");
   const [selected, setSelected] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [verseView, setVerseView] = useState<VerseView | null>(null);
   const [sharing, setSharing] = useState<{ surah: Surah; initial: number } | null>(null);
   const [navigationVisible, setNavigationVisible] = useState(false);
-  const [originalLinesReady, setOriginalLinesReady] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
-  const content = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
   const gesture = useRef<{
     id: number;
@@ -123,11 +120,11 @@ export default function Reader({
       gesture.current = null;
     };
   }, [page]);
-  const current = groups
-    .flatMap((g) => g.ayahs.map((a) => ({ ayah: a, surah: g.surah })))
-    .find(
-      ({ ayah, surah: s }) => `${s.number}:${ayah.numberInSurah}` === selected,
-    );
+  // A V2 line can continue an ayah from the previous page. Resolve selection
+  // against the whole surah, not only ayahs whose first word starts here.
+  const selectedSurah = selected ? surahs.find((s) => s.number === Number(selected.split(":")[0])) : undefined;
+  const selectedAyah = selectedSurah?.ayahs.find((a) => a.numberInSurah === Number(selected?.split(":")[1]));
+  const current = selectedSurah && selectedAyah ? { surah: selectedSurah, ayah: selectedAyah } : undefined;
   const go = (next: number) => {
     if (next < 1 || next > 604) return;
     const group = pageGroups(surahs, next)[0];
@@ -170,161 +167,10 @@ export default function Reader({
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, [page, surahs]);
-  useLayoutEffect(() => {
-    let active = true;
-    const fit = () => {
-      if (!active || !frame.current || !content.current) return;
-      const el = content.current;
-      // The original-line renderer hides this fallback after loading. Measuring
-      // a hidden element returns zero and incorrectly selects the largest font.
-      if (originalLinesReady || !el.getClientRects().length ||
-          frame.current.clientWidth <= 0 || frame.current.clientHeight <= 0) return;
-      // Start each measurement from the Mushaf's base leading.  A prior page may
-      // have expanded its line spacing, and retaining that inline value makes the
-      // next page appear unchanged or forces an unnecessarily small font.
-      el.style.lineHeight = "";
-      const contentBounds = () => {
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        const rects = Array.from(range.getClientRects()).filter(
-          (rect) => rect.width > 0 && rect.height > 0,
-        );
-        if (!rects.length) return { height: 0, width: 0, lineCount: 0 };
-        const top = Math.min(...rects.map((rect) => rect.top));
-        const bottom = Math.max(...rects.map((rect) => rect.bottom));
-        const left = Math.min(...rects.map((rect) => rect.left));
-        const right = Math.max(...rects.map((rect) => rect.right));
-        // Glyphs and ayah buttons have slightly different vertical offsets;
-        // cluster them by baseline instead of counting each offset as a line.
-        const lineTops: number[] = [];
-        for (const rect of [...rects].sort((a, b) => a.top - b.top)) {
-          if (!lineTops.some((top) => Math.abs(top - rect.top) < 8)) {
-            lineTops.push(rect.top);
-          }
-        }
-        return {
-          height: bottom - top,
-          width: right - left,
-          lineCount: lineTops.length,
-        };
-      };
-      const hasOrphanLastAyah = () => {
-        const verses = Array.from(el.querySelectorAll<HTMLElement>(".mushaf-verse"));
-        const lastVerse = verses.at(-1);
-        if (!lastVerse) return false;
-
-        const allRects = verses.flatMap((verse) =>
-          Array.from(verse.getClientRects()).filter(
-            (rect) => rect.width > 0 && rect.height > 0,
-          ),
-        );
-        if (!allRects.length) return false;
-        const lastLineTop = Math.max(...allRects.map((rect) => Math.round(rect.top)));
-        const lastLineRects = allRects.filter(
-          (rect) => Math.abs(Math.round(rect.top) - lastLineTop) <= 1,
-        );
-        const lastLineVerses = new Set(
-          verses
-            .filter((verse) =>
-              Array.from(verse.getClientRects()).some(
-                (rect) => Math.abs(Math.round(rect.top) - lastLineTop) <= 1,
-              ),
-            )
-            .map((verse) => verse.dataset.verseKey),
-        );
-
-        // Only correct a genuinely isolated short ayah. A final line that is
-        // full (or shared with another ayah) is a valid Mushaf line.
-        return (
-          lastLineVerses.size === 1 &&
-          lastLineRects.reduce((width, rect) => width + rect.width, 0) <
-            el.clientWidth * 0.68
-        );
-      };
-      let low = 8,
-        high = Math.min(frame.current.clientWidth / 5, prefs.fontSize * 2);
-      const availableHeight = frame.current.clientHeight - 16;
-      // Measure rendered Quran lines, not the flex item which already fills the page.
-      for (let i = 0; i < 18; i++) {
-        const mid = (low + high) / 2;
-        el.style.fontSize = `${mid}px`;
-        const bounds = contentBounds();
-        if (
-          bounds.height + 12 <= availableHeight &&
-          el.scrollWidth <= frame.current.clientWidth
-        )
-          low = mid;
-        else high = mid;
-      }
-      let currentSize = Math.floor(low * 100) / 100;
-      el.style.fontSize = `${currentSize}px`;
-      // Prevent a very short final ayah from becoming a lone final line. This
-      // is deliberately a small adjustment: it preserves the supplied Hafs
-      // glyphs and page content, only allowing the preceding line to absorb it.
-      if (page > 2 && hasOrphanLastAyah()) {
-        const smallest = currentSize * 0.88;
-        for (
-          let candidate = currentSize - 0.1;
-          candidate >= smallest;
-          candidate -= 0.1
-        ) {
-          el.style.fontSize = `${candidate}px`;
-          const bounds = contentBounds();
-          if (
-            !hasOrphanLastAyah() &&
-            bounds.height + 12 <= availableHeight &&
-            el.scrollWidth <= frame.current.clientWidth
-          ) {
-            currentSize = Math.floor(candidate * 100) / 100;
-            break;
-          }
-        }
-        el.style.fontSize = `${currentSize}px`;
-      }
-      const metrics = contentBounds();
-      if (page > 2 && metrics.lineCount > 1) {
-        const freeSpace = Math.max(0, availableHeight - metrics.height - 4);
-        const expandedLineHeight =
-          1.85 + freeSpace / ((metrics.lineCount - 1) * currentSize);
-        el.style.lineHeight = String(Math.min(2.2, expandedLineHeight));
-      }
-
-    };
-    fit();
-    const observer = new ResizeObserver(fit);
-    if (frame.current) observer.observe(frame.current);
-    document.fonts.ready.then(fit);
-    document.fonts.addEventListener("loadingdone", fit);
-    void Promise.all([
-      document.fonts.load('30px "Manara Uthmanic Hafs"'),
-      document.fonts.load('30px "Manara Surah"'),
-      document.fonts.load('24px "Manara Juz"'),
-    ])
-      .then(fit)
-      .catch(() => {});
-    return () => {
-      active = false;
-      observer.disconnect();
-      document.fonts.removeEventListener("loadingdone", fit);
-    };
-  }, [page, prefs.fontSize, navigationVisible, originalLinesReady]);
   useEffect(() => {
     document.body.classList.toggle("mushaf-navigation-visible", navigationVisible);
     return () => document.body.classList.remove("mushaf-navigation-visible");
   }, [navigationVisible]);
-  const number = (a: (typeof first.ayahs)[number], s: Surah) => (
-    <button
-      className={`verse-number ${prefs.last.surah === s.number && prefs.last.ayah === a.numberInSurah ? "current" : ""}`}
-      aria-label={`${s.name}، الآية ${a.numberInSurah}`}
-      aria-pressed={selected === `${s.number}:${a.numberInSurah}`}
-      onClick={() => {
-        setVerseView("actions");
-        setSelected(`${s.number}:${a.numberInSurah}`);
-        setCopied(false);
-        prefs.set({ last: { surah: s.number, ayah: a.numberInSurah } });
-      }}
->{a.numberInSurah.toLocaleString("ar-EG")}</button>
-  );
   return (
     <div className={`reader paged-reader ${page <= 2 ? "opening-page" : ""} ${navigationVisible ? "" : "mushaf-focus-mode"}`}>
       <header className="reader-toolbar mushaf-header">
@@ -469,7 +315,6 @@ export default function Reader({
           className={`mushaf-page-sheet ${dragging ? "is-dragging" : ""}`}
         >
           <MushafLines page={page} surahs={surahs} selected={selected}
-            onReady={setOriginalLinesReady}
             onSelect={(key) => {
               if (Date.now() < suppressClickUntil.current) return;
               const [surah, ayah] = key.split(":").map(Number);
@@ -478,80 +323,7 @@ export default function Reader({
               setCopied(false);
               prefs.set({ last: { surah, ayah } });
             }} />
-          <div className="mushaf-page-text" ref={content} key={page} style={originalLinesReady ? { display: "none" } : undefined}>
-            {groups.map(({ surah: s, ayahs }) => (
-              <section className="mushaf-surah" key={s.number}>
-                {ayahs[0].numberInSurah === 1 && (
-                  <div className="mushaf-surah-heading supplied-surah-frame">
-                    <img
-                      src="/images/surah-frame.svg"
-                      alt=""
-                      aria-hidden="true"
-                      draggable={false}
-                    />
-                    <h1
-                      className="mushaf-surah-name"
-                      aria-label={s.name}
-                      dir="ltr"
-                    >
-                      {String(s.number).padStart(3, "0")}
-                    </h1>
-                    <span className="frame-juz">
-                      <span>الجزء</span>
-                      <b>{ayahs[0].juz.toLocaleString("ar-EG")}</b>
-                    </span>
-                    <span className="frame-surah-order">
-                      <span>ترتيبها</span><b>{s.number.toLocaleString("ar-EG")}</b>
-                    </span>
-                  </div>
-                )}
-                {ayahs.map((a) => {
-                  const sourceOpening = splitOpening(s.number, a, basmala);
-                  // Match the display encoding to the supplied Hafs font.
-                  const opening = {
-                    basmala: sourceOpening.basmala,
-                    text: s.number === 1 && a.numberInSurah === 1
-                      ? ""
-                      : a.displayText ?? sourceOpening.text,
-                  };
-                  const endingStart = opening.text.lastIndexOf(" ") + 1;
-                  return (
-                    <span
-                      className={`mushaf-verse ${selected === `${s.number}:${a.numberInSurah}` ? "verse-selected" : ""}`}
-                      data-verse-key={`${s.number}:${a.numberInSurah}`}
-                      onContextMenu={(event) => event.preventDefault()}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        if (Date.now() < suppressClickUntil.current || (event.target as HTMLElement).closest("button")) return;
-                        setSelected(`${s.number}:${a.numberInSurah}`);
-                        setVerseView("actions");
-                        setCopied(false);
-                        prefs.set({ last: { surah: s.number, ayah: a.numberInSurah } });
-                      }}
-                      key={a.number}
-                      id={`ayah-${s.number}-${a.numberInSurah}`}
-                    >
-                      {opening.basmala && (
-                        <span className="mushaf-basmala">
-                          <span
-                            className="basmala-artwork"
-                            role="img"
-                            aria-label={opening.basmala}
-                          />{s.number === 1 && number(a, s)}
-                        </span>
-                      )}
-                      {opening.text && (
-                        <>
-                          <span>{opening.text.slice(0, endingStart)}</span>
-                          <span className="mushaf-ayah-ending">{opening.text.slice(endingStart)}{number(a, s)}</span>{a !== ayahs[ayahs.length - 1] ? " " : null}
-                        </>
-                      )}
-                    </span>
-                  );
-                })}
-              </section>
-            ))}
-          </div>
+
         </div>
       </div>
       <div className={`mushaf-verse-tools ${current ? "has-selection" : ""}`}>

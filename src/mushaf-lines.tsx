@@ -1,52 +1,30 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Surah } from "./data";
+import { getLoadedMushafPage, loadMushafPage, type MushafVerse } from "./mushaf-loader";
 
-interface Word { code_v2: string; line_number: number; page_number: number }
-interface Verse { verse_key: string; words: Word[] }
-interface PageData { verses: Verse[]; pagination: { next_page: number | null } }
-const pages = new Map<number, Verse[]>();
-const fonts = new Map<number, Promise<FontFace>>();
-
-async function loadPage(page: number) {
-  let verses = pages.get(page);
-  if (!verses) {
-    const collected: Verse[] = [];
-    let next: number | null = 1;
-    while (next !== null) {
-      const response = await fetch(`https://api.quran.com/api/v4/verses/by_page/${page}?words=true&word_fields=code_v2&per_page=50&page=${next}`);
-      if (!response.ok) throw new Error("تعذر تحميل سطور المصحف");
-      const data: PageData = await response.json();
-      collected.push(...data.verses);
-      next = data.pagination.next_page;
-    }
-    verses = collected;
-    pages.set(page, verses);
-  }
-  let font = fonts.get(page);
-  if (!font) {
-    font = new FontFace(`MushafPage${page}`, `url(https://static.qurancdn.com/fonts/quran/hafs/v2/woff2/p${page}.woff2)`).load();
-    fonts.set(page, font);
-    font.catch(() => fonts.delete(page));
-  }
-  document.fonts.add(await font);
-  return verses;
-}
-
-export default function MushafLines({ page, surahs, selected, onSelect, onReady }: {
+export default function MushafLines({ page, surahs, selected, onSelect }: {
   page: number; surahs: Surah[]; selected: string | null;
-  onSelect: (key: string) => void; onReady: (ready: boolean) => void;
+  onSelect: (key: string) => void;
 }) {
-  const [data, setData] = useState<{ page: number; verses: Verse[] } | null>(null);
+  const [data, setData] = useState<{ page: number; verses: MushafVerse[] } | null>(null);
+  const [failedPage, setFailedPage] = useState<number | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const root = useRef<HTMLDivElement>(null);
-  const ready = data?.page === page;
+  const verses = data?.page === page ? data.verses : getLoadedMushafPage(page);
+  const ready = !!verses;
   useEffect(() => {
     let active = true;
-    onReady(false);
-    loadPage(page).then((verses) => {
-      if (active) { setData({ page, verses }); onReady(true); }
-    }).catch(() => { if (active) onReady(false); });
+    setFailedPage(null);
+    loadMushafPage(page).then((verses) => {
+      if (active) {
+        setData({ page, verses });
+        for (const neighbor of [page - 1, page + 1]) {
+          if (neighbor >= 1 && neighbor <= 604) void loadMushafPage(neighbor).catch(() => {});
+        }
+      }
+    }).catch(() => { if (active) setFailedPage(page); });
     return () => { active = false; };
-  }, [page, onReady]);
+  }, [page, attempt]);
   useLayoutEffect(() => {
     if (!ready || !root.current) return;
     const el = root.current;
@@ -63,10 +41,14 @@ export default function MushafLines({ page, surahs, selected, onSelect, onReady 
     observer.observe(el);
     return () => observer.disconnect();
   }, [ready, page]);
-  if (!ready) return null;
+  if (!ready) return <div className="qpc-page qpc-status" role="status" aria-live="polite">
+    {failedPage === page ? <><p>تعذر تحميل صفحة المصحف. تحقق من الاتصال وأعد المحاولة.</p>
+      <button className="primary" onClick={(event) => { event.stopPropagation(); setAttempt((value) => value + 1); }}>إعادة المحاولة</button></>
+      : <p>جارٍ تحميل صفحة المصحف…</p>}
+  </div>;
   const lines = new Map<number, { key: string; code: string }[]>();
   const headings = new Map<number, number>();
-  for (const verse of data.verses) {
+  for (const verse of verses!) {
     const [surah, ayah] = verse.verse_key.split(":").map(Number);
     const words = verse.words.filter((word) => word.page_number === page);
     if (ayah === 1 && words.length) headings.set(Math.max(1, words[0].line_number - (surah === 9 ? 1 : 2)), surah);
@@ -80,6 +62,7 @@ export default function MushafLines({ page, surahs, selected, onSelect, onReady 
     {Array.from({ length: 15 }, (_, i) => i + 1).map((line) => {
       const words = lines.get(line);
       const heading = headings.get(line);
+      const headingSurah = surahs.find((surah) => surah.number === heading);
       const basmala = headings.get(line - 1);
       return <div className="qpc-line" key={line}>
         {words ? <span className="qpc-line-text" style={{ fontFamily: `MushafPage${page}` }}>
@@ -88,8 +71,13 @@ export default function MushafLines({ page, surahs, selected, onSelect, onReady 
             onClick={(event) => { event.stopPropagation(); onSelect(word.key); }}
             onContextMenu={(event) => event.preventDefault()}
           >{word.code}{index < words.length - 1 ? " " : ""}</span>)}
-        </span> : heading ? <div className="qpc-surah-title">{surahs.find((s) => s.number === heading)?.name}</div>
-          : basmala && basmala !== 9 ? <div className="qpc-basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div> : null}
+        </span> : headingSurah ? <div className="qpc-surah-title mushaf-surah-heading supplied-surah-frame">
+          <img src="/images/surah-frame.svg" alt="" aria-hidden="true" draggable={false} />
+          <h1 className="mushaf-surah-name" aria-label={headingSurah.name} dir="ltr">{String(headingSurah.number).padStart(3, "0")}</h1>
+          <span className="frame-juz"><span>الجزء</span><b>{headingSurah.ayahs[0].juz.toLocaleString("ar-EG")}</b></span>
+          <span className="frame-surah-order"><span>ترتيبها</span><b>{headingSurah.number.toLocaleString("ar-EG")}</b></span>
+        </div>
+          : basmala && basmala !== 9 ? <span className="qpc-basmala basmala-artwork" role="img" aria-label="بسم الله الرحمن الرحيم" /> : null}
       </div>;
     })}
   </div>;

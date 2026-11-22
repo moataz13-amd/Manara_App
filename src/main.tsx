@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { Logo, Status } from "./ui";
 import { usePrefs } from "./store";
+import { useQuran } from "./data";
+import { loadMushafPage } from "./mushaf-loader";
 import { AudioPlayer, useAudio } from "./audio";
 import "./styles.css";
 import Splash from "./splash";
@@ -90,9 +92,24 @@ class ErrorBoundary extends React.Component<
 }
 function App() {
   const { theme, place } = usePrefs();
+  const last = usePrefs((state) => state.last);
+  const quran = useQuran();
   const location = useLocation();
   const [menu, setMenu] = useState(false);
   const track = useAudio((s) => s.track);
+  useEffect(() => {
+    const requested = Number(new URLSearchParams(location.search).get("page"));
+    const match = location.pathname.match(/^\/quran\/(\d+)/);
+    const surah = quran.data?.find((item) => item.number === (match ? Number(match[1]) : last.surah));
+    const ayah = match ? Number(location.hash.match(/^#ayah-(\d+)$/)?.[1] || 1) : last.ayah;
+    const page = match && requested >= 1 && requested <= 604 && Number.isInteger(requested)
+      ? requested : surah?.ayahs.find((item) => item.numberInSurah === ayah)?.page;
+    if (page) void loadMushafPage(page).then(() => {
+      for (const neighbor of [page - 1, page + 1]) {
+        if (neighbor >= 1 && neighbor <= 604) void loadMushafPage(neighbor).catch(() => {});
+      }
+    }).catch(() => {});
+  }, [quran.data, last.surah, last.ayah, location.pathname, location.search, location.hash]);
   useEffect(() => {
     // Warm the four bottom-nav destinations while the welcome screen is visible.
     const timer = window.setTimeout(() => {

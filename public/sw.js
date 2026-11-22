@@ -1,4 +1,4 @@
-const CACHE = "manara-v7-fast-navigation";
+const CACHE = "manara-v8-local-mushaf";
 self.addEventListener("install", () => { self.skipWaiting(); });
 self.addEventListener("install", (event) =>
   event.waitUntil(
@@ -9,6 +9,7 @@ self.addEventListener("install", (event) =>
           "/",
           "/data/quran.json",
           "/data/hafs-display.json",
+          "/data/mushaf/ayah-pages.json",
           "/data/tafsir-muyassar.json",
           "/manifest.webmanifest",
           "/images/splash-screen-1.svg",
@@ -65,7 +66,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   if (url.pathname.startsWith("/fonts/")) {
-    event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+    event.respondWith(caches.open(CACHE).then(async (cache) => {
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      const response = await fetch(event.request);
+      if (response.ok) await cache.put(event.request, response.clone());
+      return response;
+    }));
     return;
   }
   event.respondWith(
