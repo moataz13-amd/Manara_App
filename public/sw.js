@@ -1,4 +1,4 @@
-const CACHE = "manara-v8-local-mushaf";
+const CACHE = "manara-v9-mobile-cache";
 self.addEventListener("install", () => { self.skipWaiting(); });
 self.addEventListener("install", (event) =>
   event.waitUntil(
@@ -75,12 +75,11 @@ self.addEventListener("fetch", (event) => {
     }));
     return;
   }
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
+  const navigation = fetch(event.request)
+      .then(async (response) => {
         if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE).then((c) => c.put(event.request, copy));
+          const cache = await caches.open(CACHE);
+          await cache.put(event.request, response.clone());
         }
         return response;
       })
@@ -94,6 +93,7 @@ self.addEventListener("fetch", (event) => {
                 ? caches.match("/")
                 : Response.error()),
           ),
-      ),
-  );
+      );
+  event.waitUntil(navigation.then(() => {}, () => {}));
+  event.respondWith(navigation);
 });

@@ -1133,8 +1133,12 @@ main {
 .prayers-layout,
 .settings-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 25px;
+}
+.settings-grid > div,
+.prayers-layout > div {
+  min-width: 0;
 }
 .prayers-layout {
   margin-top: 26px;
@@ -1528,7 +1532,7 @@ summary {
   }
   .settings-grid,
   .prayers-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .adhkar-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -4042,3 +4046,17 @@ body.reading-mushaf {
 @keyframes mushaf-audio-spin { to { transform: rotate(360deg); } }
 .mushaf-audio-spinner { animation: mushaf-audio-spin 1s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .mushaf-audio-spinner { animation: none; } }
+
+/* Prevent iOS focus zoom without disabling the user's pinch zoom. */
+@media (max-width: 700px), (pointer: coarse) {
+  :root .app input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+  :root .app select,
+  :root .app textarea,
+  .share-dialog input:not([type="range"]),
+  .share-dialog select,
+  .share-dialog textarea {
+    font-size: 16px;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
